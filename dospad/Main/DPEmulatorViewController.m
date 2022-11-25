@@ -148,13 +148,21 @@ static struct {
 	}
 }
 
-// Return YES if floating input of type exists
+// Return YES if floating input of type is on the screen
 - (BOOL)removeFloatingInput:(DPFloatingInputType)type
 {
     UIView *v = [self findInputView:type];
     if (v) {
     	[v removeFromSuperview];
 	    [self refreshFullscreenPanel];
+        
+        // Shrink screen when keyboard is enabled
+        if ([DPSettings shared].autoShrinkScreenKeyboardEnabled && type == TAG_INPUT_KEYBOARD &&
+            [UIDevice.currentDevice.model isEqual:@"iPad"] && !_currentScene.isPortrait && shouldShrinkScreen)
+        {
+            [self toggleScreenSize];
+        }
+        
     	return YES;
 	}
 	return NO;
@@ -175,6 +183,7 @@ static struct {
             }
         }
         
+        //Deprecated
         //UILabel *mouseButtons = (UILabel *)[_rootContainer viewWithTag:TAG_INPUT_MOUSE_BUTTONS];
         //UILabel *numpadButtons = (UILabel *)[self.view viewWithTag:TAG_INPUT_NUMPAD];
         //if (v.tag > TAG_INPUT_MIN && v.tag < TAG_INPUT_MAX) {
@@ -268,7 +277,7 @@ static struct {
     [items addObject:btnOption];
     
     UIButton *btnRemap = [[UIButton alloc] initWithFrame:CGRectMake(340,0,20,24)];
-    [btnRemap setImage:[UIImage imageNamed:@"ic_bluetooth_black_18pt"] forState:UIControlStateNormal];
+    [btnRemap setImage:[UIImage imageNamed:@"ic_bluetooth_white_18pt"] forState:UIControlStateNormal];
     [btnRemap addTarget:self action:@selector(openMfiMapper:) forControlEvents:UIControlEventTouchUpInside];
     [items addObject:btnRemap];
     
@@ -358,6 +367,7 @@ static struct {
     }
     else
     {
+        //MARK: Screen shrink
         if (shouldShrinkScreen)
         {
             if ([UIDevice.currentDevice.model isEqual:@"iPad"]) {
@@ -492,13 +502,13 @@ static struct {
                 frame = CGRectMake((rootRect.size.width-barSize.width)/2, 0, barSize.width, barSize.height);
             }
 
+            //MARK: Fullscreen/scale panel button
             UIButton *btnExitFS;
-            
             fullscreenPanel = [[FloatPanel alloc] initWithFrame:frame];
             if ([UIDevice.currentDevice.model isEqual:@"iPad"]) {
                 btnExitFS = [[UIButton alloc] initWithFrame:CGRectMake(0,0,72,36)];
                 btnExitFS.center=CGPointMake(63, 18);
-                [btnExitFS setImage:[UIImage imageNamed:@"exitfull-black-ipad"] forState:UIControlStateNormal];
+                [btnExitFS setImage:[UIImage imageNamed:@"exitfull~ipad"] forState:UIControlStateNormal];
             } else {
                 btnExitFS = [[UIButton alloc] initWithFrame:CGRectMake(0,0,48,24)];
                 btnExitFS.center=CGPointMake(44, 13);
@@ -647,6 +657,13 @@ static struct {
 	kbd.alpha = [DPSettings shared].floatAlpha;
 	[_rootContainer addSubview:kbd];
 	kbd.tag = TAG_INPUT_KEYBOARD;
+    
+    // Shrink screen when keyboard is enabled
+    if ([DPSettings shared].autoShrinkScreenKeyboardEnabled && [UIDevice.currentDevice.model isEqual:@"iPad"] &&
+        !_currentScene.isPortrait && !shouldShrinkScreen)
+    {
+        [self toggleScreenSize];
+    }
 }
 
 // Portrait mode only
