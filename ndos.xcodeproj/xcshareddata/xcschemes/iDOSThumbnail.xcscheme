@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E7B2BBCD252155EE00490083"
-               BuildableName = "iDOSThumbnail.appex"
-               BlueprintName = "iDOSThumbnail"
+               BuildableName = "nDOSThumbnail.appex"
+               BlueprintName = "nDOSThumbnail"
                ReferencedContainer = "container:ndos.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -31,7 +31,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E7BE1297128BF31A0046990B"
                BuildableName = "iDOS.app"
-               BlueprintName = "iDOS"
+               BlueprintName = "nDOS"
                ReferencedContainer = "container:ndos.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -63,7 +63,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
             BuildableName = "iDOS.app"
-            BlueprintName = "iDOS"
+            BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -82,7 +82,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
             BuildableName = "iDOS.app"
-            BlueprintName = "iDOS"
+            BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
