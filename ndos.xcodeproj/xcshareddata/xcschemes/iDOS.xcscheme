@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E7BE1297128BF31A0046990B"
                BuildableName = "iDOS.app"
-               BlueprintName = "iDOS"
+               BlueprintName = "nDOS"
                ReferencedContainer = "container:ndos.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,7 +46,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
             BuildableName = "iDOS.app"
-            BlueprintName = "iDOS"
+            BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -63,7 +63,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
             BuildableName = "iDOS.app"
-            BlueprintName = "iDOS"
+            BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -73,6 +73,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
+      customArchiveName = "nDOS"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
