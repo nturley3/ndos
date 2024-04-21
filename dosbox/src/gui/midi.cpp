@@ -97,6 +97,11 @@ MidiHandler Midi_none;
 
 #endif
 
+#define DOSBOX_MIDI_H
+#include "midi_mt32.cpp"
+static MidiHandler_mt32 &Midi_mt32 = MidiHandler_mt32::GetInstance();
+#undef DOSBOX_MIDI_H
+
 DB_Midi midi;
 
 void MIDI_RawOutByte(Bit8u data) {
