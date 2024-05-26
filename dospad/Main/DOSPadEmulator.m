@@ -22,7 +22,7 @@
 // Set up environment for the dosbox emulation.
 // - disk c
 //   By default, Documents folder is set up as diskc.
-//   However, if a `*.idos` folder is imported,
+//   However, if a `*.ndos` folder is imported,
 //   that folder will be mounted as diskc instead.
 //
 #import "DOSPadEmulator.h"

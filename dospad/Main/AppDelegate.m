@@ -77,7 +77,7 @@
 			// TODO: show alert can not open while it's running
 			// quick first.
 			[_emulatorController alert:@"Busy"
-				message:@"Can not launch the iDOS package while emulator is running. Please terminate the app first."];
+				message:@"Can not launch the nDOS package while emulator is running. Please terminate the app first."];
 			return NO;
 		}
 		[url startAccessingSecurityScopedResource];

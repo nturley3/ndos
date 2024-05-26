@@ -12,14 +12,14 @@
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>iDOS Package</string>
+			<string>nDOS Package</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.litchie.idos-package</string>
+				<string>io.turley.ndos-package</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
@@ -121,17 +121,17 @@
 				<string>com.apple.package</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>iDOS Package</string>
+			<string>nDOS Package</string>
 			<key>UTTypeIconFiles</key>
 			<array/>
 			<key>UTTypeIdentifier</key>
-			<string>com.litchie.idos-package</string>
+			<string>io.turley.ndos-package</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
-				<string>idos</string>
+				<string>ndos</string>
 				<key>public.mime-type</key>
-				<string>application/idos</string>
+				<string>application/ndos</string>
 			</dict>
 		</dict>
 	</array>
