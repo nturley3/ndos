@@ -2,13 +2,16 @@ nDOS
 ====
 nDOS is a DOSBox port for iOS and iPadOS, allowing you to run old MS-DOS games and programs. nDOS is forked from the original iDOS/DOSPad project but updated to use the latest code from the DOSBox SVN source tree. It also contains additional patches and customizations. Please see the [Acknowledgements](#acknowledgements) section
 
+
+**2024-05-26 UPDATE**: With the Apple's recent news of allowing emulators on the App Store, I'm expecting the original iDOS app to make its way to the app store and be approved (see [iDOS update](https://litchie.com/2024/04/new-hope)). I don't intend to create a copycat or compete with the original iDOS. If needed, I may try to make merge requests with iDOS and support that project. 
+
 Purpose
 ====
 I'm a retro computing enthusiast. I especially enjoy gaming from the MS-DOS and early Microsoft Windows era. I'm also a fan of Apple products, especially the iPad. Playing old DOS/Windows games on a touchscreen device like an iPad brings old memories back to life using modern gear. 
 
 I also wanted to take on a coding project that would be fun while learning about the Apple SDKs and developing in the iOS ecosystem (even if the project is using an older Objective-C base).
 
-Why is it called nDOS? Because I lack imagination and couldn't think of a better name when I decided to fork this from iDOS. 😆
+Why is it called nDOS? Because I lack imagination and couldn't think of a better name when I decided to fork this from iDOS 😆. In reality, its was to differentiate the code from iDOS and allow me to try different things.  
 
 Development
 ====
