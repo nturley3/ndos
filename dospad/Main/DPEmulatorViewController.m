@@ -1214,7 +1214,7 @@ static struct {
 		case DriveMount_Default:
 			utis = @[
                 [UTType typeWithIdentifier:@"public.folder"],
-				[UTType typeWithIdentifier:@"com.litchie.idos-package"],
+				[UTType typeWithIdentifier:@"io.turley.ndos-package"],
 				[UTType typeWithIdentifier:@"io.turley.dosbox-cdimage"],
 				[UTType typeWithIdentifier:@"io.turley.dosbox-diskimage"],
                 [UTType typeWithIdentifier:@"io.turley.dosbox-floppyimage"]
@@ -1227,7 +1227,7 @@ static struct {
 			break;
 		case DriveMount_Packages:
 			utis = @[
-				[UTType typeWithIdentifier:@"com.litchie.idos-package"]
+				[UTType typeWithIdentifier:@"io.turley.ndos-package"]
 			];
 			break;
 		case DriveMount_DiskImage:
@@ -1458,7 +1458,7 @@ static struct {
         }]];
         
     [actions addObject:[UIAlertAction
-        actionWithTitle:@"iDOS Packages"
+        actionWithTitle:@"nDOS Packages"
         style:UIAlertActionStyleDefault
         handler:^(UIAlertAction * _Nonnull action) {
             [self openDriveMountPicker:DriveMount_Packages];

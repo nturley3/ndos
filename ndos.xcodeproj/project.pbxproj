@@ -432,7 +432,7 @@
 		E7960FDC2564CE7100556B9D /* BReverbModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E7960FAD2564CE7100556B9D /* BReverbModel.cpp */; };
 		E79610272564DCA000556B9D /* libmt32emu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E7960F462564CE4D00556B9D /* libmt32emu.a */; };
 		E79610322566580000556B9D /* DPSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = E7961031256657FF00556B9D /* DPSettings.m */; };
-		E796109E256A6B5700556B9D /* iDOSThumbnail.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = E7B2BBCE252155EF00490083 /* iDOSThumbnail.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E796109E256A6B5700556B9D /* nDOSThumbnail.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = E7B2BBCE252155EF00490083 /* nDOSThumbnail.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E7A01EE71CC9277E0036A4CF /* ColorTheme.m in Sources */ = {isa = PBXBuildFile; fileRef = E7A01EDD1CC927370036A4CF /* ColorTheme.m */; };
 		E7A01EF41CC9A5480036A4CF /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB9E40C0DEB81970027A75A /* CoreAudio.framework */; };
 		E7A01EF71CC9C1AB0036A4CF /* gift.png in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EE81CC92F0C0036A4CF /* gift.png */; };
@@ -733,7 +733,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				E796109E256A6B5700556B9D /* iDOSThumbnail.appex in Embed App Extensions */,
+				E796109E256A6B5700556B9D /* nDOSThumbnail.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1302,7 +1302,7 @@
 		E7B2BBB5252038CF00490083 /* SDL_uikitopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitopengles.h; sourceTree = "<group>"; };
 		E7B2BBB6252038CF00490083 /* SDL_uikitvideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvideo.m; sourceTree = "<group>"; };
 		E7B2BBB7252038CF00490083 /* jumphack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jumphack.h; sourceTree = "<group>"; };
-		E7B2BBCE252155EF00490083 /* iDOSThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = iDOSThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7B2BBCE252155EF00490083 /* nDOSThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = nDOSThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7B2BBCF252155F000490083 /* QuickLookThumbnailing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLookThumbnailing.framework; path = System/Library/Frameworks/QuickLookThumbnailing.framework; sourceTree = SDKROOT; };
 		E7B2BBD2252155F100490083 /* ThumbnailProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThumbnailProvider.h; sourceTree = "<group>"; };
 		E7B2BBD3252155F100490083 /* ThumbnailProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThumbnailProvider.m; sourceTree = "<group>"; };
@@ -1312,7 +1312,7 @@
 		E7B2BBE7252432DB00490083 /* UIViewController+Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+Alert.m"; sourceTree = "<group>"; };
 		E7B2BBE92525728100490083 /* screenshot_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot_bg.png; sourceTree = "<group>"; };
 		E7B7F86F1DE1D70200590701 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		E7BE1316128BF31A0046990B /* iDOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iDOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7BE1316128BF31A0046990B /* nDOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nDOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7BE1318128BF31A0046990B /* iDOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "iDOS-Info.plist"; sourceTree = "<group>"; };
 		E7D214C511E45BD000D9654E /* keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keys.h; sourceTree = "<group>"; };
 		E7D214C711E45BDE00D9654E /* keys.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; path = keys.m; sourceTree = "<group>"; };
@@ -1596,8 +1596,8 @@
 				FD6526630DE8FCCB002AD96B /* libSDLiPhoneOS.a */,
 				E71E60EB11B5506800EC5A05 /* libdosbox.a */,
 				E778B2B2123918F6008AF49A /* libSDL_net.a */,
-				E7BE1316128BF31A0046990B /* iDOS.app */,
-				E7B2BBCE252155EF00490083 /* iDOSThumbnail.appex */,
+				E7BE1316128BF31A0046990B /* nDOS.app */,
+				E7B2BBCE252155EF00490083 /* nDOSThumbnail.appex */,
 				E7960F462564CE4D00556B9D /* libmt32emu.a */,
 			);
 			name = Products;
@@ -3201,9 +3201,9 @@
 			productReference = E7960F462564CE4D00556B9D /* libmt32emu.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		E7B2BBCD252155EE00490083 /* iDOSThumbnail */ = {
+		E7B2BBCD252155EE00490083 /* nDOSThumbnail */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E7B2BBD9252155F100490083 /* Build configuration list for PBXNativeTarget "iDOSThumbnail" */;
+			buildConfigurationList = E7B2BBD9252155F100490083 /* Build configuration list for PBXNativeTarget "nDOSThumbnail" */;
 			buildPhases = (
 				E7B2BBCA252155EE00490083 /* Sources */,
 				E7B2BBCB252155EE00490083 /* Frameworks */,
@@ -3213,14 +3213,14 @@
 			);
 			dependencies = (
 			);
-			name = iDOSThumbnail;
+			name = nDOSThumbnail;
 			productName = iDOSThumbnail;
-			productReference = E7B2BBCE252155EF00490083 /* iDOSThumbnail.appex */;
+			productReference = E7B2BBCE252155EF00490083 /* nDOSThumbnail.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		E7BE1297128BF31A0046990B /* iDOS */ = {
+		E7BE1297128BF31A0046990B /* nDOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E7BE1313128BF31A0046990B /* Build configuration list for PBXNativeTarget "iDOS" */;
+			buildConfigurationList = E7BE1313128BF31A0046990B /* Build configuration list for PBXNativeTarget "nDOS" */;
 			buildPhases = (
 				E7BE12A2128BF31A0046990B /* Resources */,
 				E7BE12E7128BF31A0046990B /* Sources */,
@@ -3239,9 +3239,9 @@
 				E796109D256A6B2B00556B9D /* PBXTargetDependency */,
 				E79610A0256A6B5700556B9D /* PBXTargetDependency */,
 			);
-			name = iDOS;
+			name = nDOS;
 			productName = dospad;
-			productReference = E7BE1316128BF31A0046990B /* iDOS.app */;
+			productReference = E7BE1316128BF31A0046990B /* nDOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FD6526620DE8FCCB002AD96B /* SDLStaticLib */ = {
@@ -3306,12 +3306,12 @@
 			projectDirPath = "";
 			projectRoot = ./SDL;
 			targets = (
-				E7BE1297128BF31A0046990B /* iDOS */,
+				E7BE1297128BF31A0046990B /* nDOS */,
 				FD6526620DE8FCCB002AD96B /* SDLStaticLib */,
 				0064653F107E3D7400183915 /* SDL Generated Header Files */,
 				E778B2B1123918F6008AF49A /* SDL_net */,
 				E71E60EA11B5506800EC5A05 /* dosbox */,
-				E7B2BBCD252155EE00490083 /* iDOSThumbnail */,
+				E7B2BBCD252155EE00490083 /* nDOSThumbnail */,
 				E7960F452564CE4D00556B9D /* mt32emu */,
 			);
 		};
@@ -3490,7 +3490,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "sh ./SDL/build-scripts/updaterev.sh";
+			shellScript = "sh ./SDL/build-scripts/updaterev.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3830,17 +3830,17 @@
 		};
 		E796109D256A6B2B00556B9D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E7B2BBCD252155EE00490083 /* iDOSThumbnail */;
+			target = E7B2BBCD252155EE00490083 /* nDOSThumbnail */;
 			targetProxy = E796109C256A6B2B00556B9D /* PBXContainerItemProxy */;
 		};
 		E79610A0256A6B5700556B9D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E7B2BBCD252155EE00490083 /* iDOSThumbnail */;
+			target = E7B2BBCD252155EE00490083 /* nDOSThumbnail */;
 			targetProxy = E796109F256A6B5700556B9D /* PBXContainerItemProxy */;
 		};
 		E7B2BBED252628D300490083 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E7B2BBCD252155EE00490083 /* iDOSThumbnail */;
+			target = E7B2BBCD252155EE00490083 /* nDOSThumbnail */;
 			targetProxy = E7B2BBEC252628D300490083 /* PBXContainerItemProxy */;
 		};
 		E7BE1298128BF31A0046990B /* PBXTargetDependency */ = {
@@ -4292,6 +4292,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -4358,6 +4361,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -4425,6 +4431,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -4438,7 +4447,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20220507;
+				CURRENT_PROJECT_VERSION = 20240526;
 				DEVELOPMENT_TEAM = B74FG76U86;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4452,8 +4461,10 @@
 				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/iDOS-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = nDOS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4463,8 +4474,11 @@
 					UniformTypeIdentifiers,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos;
-				PRODUCT_NAME = iDOS;
+				PRODUCT_NAME = nDOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_WORKSPACE_SKIPPED_SDK_FRAMEWORKS = OpenGLES;
 			};
@@ -4478,7 +4492,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20220507;
+				CURRENT_PROJECT_VERSION = 20240526;
 				DEVELOPMENT_TEAM = B74FG76U86;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = dospad/DPPrefix.pch;
@@ -4489,8 +4503,10 @@
 				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/iDOS-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = nDOS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4500,8 +4516,11 @@
 					UniformTypeIdentifiers,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos;
-				PRODUCT_NAME = iDOS;
+				PRODUCT_NAME = nDOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = NO;
 				VALIDATE_WORKSPACE_SKIPPED_SDK_FRAMEWORKS = OpenGLES;
@@ -4628,7 +4647,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20220507;
+				CURRENT_PROJECT_VERSION = 20240526;
 				DEVELOPMENT_TEAM = B74FG76U86;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = dospad/DPPrefix.pch;
@@ -4640,8 +4659,10 @@
 				);
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/iDOS-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = nDOS;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4651,8 +4672,11 @@
 					UniformTypeIdentifiers,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos;
-				PRODUCT_NAME = iDOS;
+				PRODUCT_NAME = nDOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VALIDATE_WORKSPACE_SKIPPED_SDK_FRAMEWORKS = OpenGLES;
@@ -4756,7 +4780,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E7B2BBD9252155F100490083 /* Build configuration list for PBXNativeTarget "iDOSThumbnail" */ = {
+		E7B2BBD9252155F100490083 /* Build configuration list for PBXNativeTarget "nDOSThumbnail" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E7B2BBDA252155F100490083 /* Debug */,
@@ -4766,7 +4790,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E7BE1313128BF31A0046990B /* Build configuration list for PBXNativeTarget "iDOS" */ = {
+		E7BE1313128BF31A0046990B /* Build configuration list for PBXNativeTarget "nDOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E7BE1314128BF31A0046990B /* Debug */,
