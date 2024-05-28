@@ -33,6 +33,9 @@
 /* Additional DOS commands patch */
 #define ADDITIONAL_DOS_COMMANDS_PATCH 1
 
+/* NDOS build version */
+#define NDOS_BUILD_VERSION "BUILD"
+
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 

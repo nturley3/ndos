@@ -1343,7 +1343,13 @@ void DOS_Shell::CMD_VER(char *args) {
 			dos.version.major = (Bit8u)(atoi(word));
 			dos.version.minor = (Bit8u)(atoi(args));
 		}
-	} else WriteOut(MSG_Get("SHELL_CMD_VER_VER"),VERSION,dos.version.major,dos.version.minor);
+    } else {
+#ifdef IPHONEOS
+        WriteOut(MSG_Get("SHELL_CMD_VER_VER"),VERSION,dos.version.major,dos.version.minor,NDOS_BUILD_VERSION);
+#else
+        WriteOut(MSG_Get("SHELL_CMD_VER_VER"),VERSION,dos.version.major,dos.version.minor);
+#endif
+    }
 }
 
 #ifdef IPHONEOS

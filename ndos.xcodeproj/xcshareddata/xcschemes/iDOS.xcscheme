@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E7BE1297128BF31A0046990B"
-               BuildableName = "iDOS.app"
+               BuildableName = "nDOS.app"
                BlueprintName = "nDOS"
                ReferencedContainer = "container:ndos.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
-            BuildableName = "iDOS.app"
+            BuildableName = "nDOS.app"
             BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E7BE1297128BF31A0046990B"
-            BuildableName = "iDOS.app"
+            BuildableName = "nDOS.app"
             BlueprintName = "nDOS"
             ReferencedContainer = "container:ndos.xcodeproj">
          </BuildableReference>
