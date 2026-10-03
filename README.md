@@ -32,6 +32,7 @@ Patches/Customizations
 * Patched to support max memory of 383MB. This can be used for running Win9x (although not tested)
 * Apple Pencil gesture support
 * Additional DOS support commands (such as XCOPY, DOSIDLE, MEM etc). See branch `vfile-additions` for more information.
+* Updated pagefault handling for normal core. Disables pagefault recursion to enable better support for running Windows 95. See [Vogons discussion](https://www.vogons.org/viewtopic.php?f=41&t=36629)
 
 Acknowledgements
 ====

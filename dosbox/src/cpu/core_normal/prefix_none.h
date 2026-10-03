@@ -217,8 +217,40 @@
 	CASE_W(0x60)												/* PUSHA */
 		{
 			Bit16u old_sp=reg_sp;
-			Push_16(reg_ax);Push_16(reg_cx);Push_16(reg_dx);Push_16(reg_bx);
-			Push_16(old_sp);Push_16(reg_bp);Push_16(reg_si);Push_16(reg_di);
+			Bit32u tmp=reg_esp;
+			//Push_16(reg_ax);
+			Bitu tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_ax);
+			tmp=tmp2;
+			//Push_16(reg_cx);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_cx);
+			tmp=tmp2;
+			//Push_16(reg_dx);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_dx);
+			tmp=tmp2;
+			//Push_16(reg_bx);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_bx);
+			tmp=tmp2;
+			//Push_16(old_sp);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,old_sp);
+			tmp=tmp2;
+			//Push_16(reg_bp);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_bp);
+			tmp=tmp2;
+			//Push_16(reg_si);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_si);
+			tmp=tmp2;
+			//Push_16(reg_di);
+			tmp2=(tmp&cpu.stack.notmask)|((tmp-2)&cpu.stack.mask);
+			mem_writew(SegPhys(ss) + (tmp2 & cpu.stack.mask) ,reg_di);
+			tmp=tmp2;
+			reg_sp=tmp;
 		}
 		break;
 	CASE_W(0x61)												/* POPA */
@@ -692,8 +724,10 @@
 			GetRMrw;
 			if (rm >= 0xc0) goto illegal_opcode;
 			GetEAa;
-			if (CPU_SetSegGeneral(es,LoadMw(eaa+2))) RUNEXCEPTION();
-			*rmrw=LoadMw(eaa);
+			Bitu j=LoadMw(eaa+2);
+			Bitu k=LoadMw(eaa);
+			if (CPU_SetSegGeneral(es,j)) RUNEXCEPTION();
+			*rmrw=k;
 			break;
 		}
 	CASE_W(0xc5)												/* LDS */
@@ -701,8 +735,10 @@
 			GetRMrw;
 			if (rm >= 0xc0) goto illegal_opcode;
 			GetEAa;
-			if (CPU_SetSegGeneral(ds,LoadMw(eaa+2))) RUNEXCEPTION();
-			*rmrw=LoadMw(eaa);
+			Bitu j=LoadMw(eaa+2);
+			Bitu k=LoadMw(eaa);
+			if (CPU_SetSegGeneral(ds,j)) RUNEXCEPTION();
+			*rmrw=k;
 			break;
 		}
 	CASE_B(0xc6)												/* MOV Eb,Ib */

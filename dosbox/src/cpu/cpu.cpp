@@ -130,7 +130,7 @@ void Descriptor:: Save(PhysPt address) {
 	Bit32u* data = (Bit32u*)&saved;
 	mem_writed(address,*data);
 	mem_writed(address+4,*(data+1));
-	cpu.mpl=03;
+	cpu.mpl=3;
 }
 
 
@@ -168,6 +168,15 @@ PhysPt SelBase(Bitu sel) {
 	}
 }
 
+void CPU_SetCPL(Bitu newcpl) {
+	if (newcpl != cpu.cpl) {
+		if (paging.enabled) {
+			if ( ((cpu.cpl < 3) && (newcpl == 3)) || ((cpu.cpl == 3) && (newcpl < 3)) )
+			PAGING_SwitchCPL(newcpl == 3);
+		}
+		cpu.cpl = newcpl;
+	}
+}
 
 void CPU_SetFlags(Bitu word,Bitu mask) {
 	mask|=CPU_extflags_toggle;	// ID-flag and AC-flag can be toggled on CPUID-supporting CPUs
@@ -454,7 +463,10 @@ bool CPU_SwitchTask(Bitu new_tss_selector,TSwitchType tstype,Bitu old_eip) {
 	} else {
 	
 		/* Setup the new cr3 */
-		PAGING_SetDirBase(new_cr3);
+		if (paging.cr3 != new_cr3)
+			// if they are the same it is not flushed
+			// according to the 386 manual
+			PAGING_SetDirBase(new_cr3);
 
 		/* Load new context */
 		if (new_tss.is386) {
@@ -478,13 +490,13 @@ bool CPU_SwitchTask(Bitu new_tss_selector,TSwitchType tstype,Bitu old_eip) {
 	if (reg_flags & FLAG_VM) {
 		SegSet16(cs,new_cs);
 		cpu.code.big=false;
-		cpu.cpl=3;			//We don't have segment caches so this will do
+		CPU_SetCPL(3);			//We don't have segment caches so this will do
 	} else {
 		/* Protected mode task */
 		if (new_ldt!=0) CPU_LLDT(new_ldt);
 		/* Load the new CS*/
 		Descriptor cs_desc;
-		cpu.cpl=new_cs & 3;
+		CPU_SetCPL(new_cs & 3);
 		if (!cpu.gdt.GetDescriptor(new_cs,cs_desc))
 			E_Exit("Task switch with CS beyond limits");
 		if (!cs_desc.saved.seg.p)
@@ -690,7 +702,7 @@ void CPU_Interrupt(Bitu num,Bitu type,Bitu oldeip) {
 							reg_sp=n_esp & 0xffff;
 						}
 
-						cpu.cpl=cs_dpl;
+						CPU_SetCPL(cs_dpl);
 						if (gate.Type() & 0x8) {	/* 32-bit Gate */
 							if (reg_flags & FLAG_VM) {
 								CPU_Push32(SegValue(gs));SegSet16(gs,0x0);
@@ -860,7 +872,7 @@ void CPU_IRET(bool use32,Bitu oldeip) {
 
 				CPU_SetFlags(n_flags,FMASK_ALL | FLAG_VM);
 				DestroyConditionFlags();
-				cpu.cpl=3;
+				CPU_SetCPL(3);
 
 				CPU_SetSegGeneral(ss,n_ss);
 				CPU_SetSegGeneral(es,n_es);
@@ -981,7 +993,7 @@ void CPU_IRET(bool use32,Bitu oldeip) {
 			CPU_SetFlags(n_flags,mask);
 			DestroyConditionFlags();
 
-			cpu.cpl=n_cs_rpl;
+			CPU_SetCPL(n_cs_rpl);
 			reg_eip=n_eip;
 
 			Segs.val[ss]=n_ss;
@@ -1230,7 +1242,7 @@ call_code:
 							reg_sp=n_esp & 0xffff;
 						}
 
-						cpu.cpl = n_cs_desc.DPL();
+						CPU_SetCPL(n_cs_desc.DPL());
 						Bit16u oldcs    = SegValue(cs);
 						/* Switch to new CS:EIP */
 						Segs.phys[cs]	= n_cs_desc.GetBase();
@@ -1453,7 +1465,7 @@ RET_same_level:
 				"RET:Stack segment not present",
 				EXCEPTION_SS,n_ss & 0xfffc)
 
-			cpu.cpl = rpl;
+			CPU_SetCPL(rpl);
 			Segs.phys[cs]=desc.GetBase();
 			cpu.code.big=desc.Big()>0;
 			Segs.val[cs]=(selector&0xfffc) | cpu.cpl;
@@ -1563,11 +1575,15 @@ void CPU_SET_CRX(Bitu cr,Bitu value) {
 			value|=CR0_FPUPRESENT;
 			Bitu changed=cpu.cr0 ^ value;
 			if (!changed) return;
+			if (GCC_UNLIKELY(changed & CR0_WRITEPROTECT)) {
+				if (CPU_ArchitectureType >= CPU_ARCHTYPE_486OLD)
+					PAGING_SetWP((value&CR0_WRITEPROTECT)? true:false);
+			}
 			cpu.cr0=value;
 			if (value & CR0_PROTECTION) {
 				cpu.pmode=true;
 				LOG(LOG_CPU,LOG_NORMAL)("Protected mode");
-				PAGING_Enable((value & CR0_PAGING)>0);
+				PAGING_Enable((value&CR0_PAGING)? true:false);
 
 				if (!(CPU_AutoDetermineMode&CPU_AUTODETERMINE_MASK)) break;
 
@@ -1620,7 +1636,7 @@ bool CPU_WRITE_CRX(Bitu cr,Bitu value) {
 	/* Check if privileged to access control registers */
 	if (cpu.pmode && (cpu.cpl>0)) return CPU_PrepareException(EXCEPTION_GP,0);
 	if ((cr==1) || (cr>4)) return CPU_PrepareException(EXCEPTION_UD,0);
-	if (CPU_ArchitectureType<CPU_ARCHTYPE_486OLDSLOW) {
+	if (CPU_ArchitectureType<CPU_ARCHTYPE_486OLD) {
 		if (cr==4) return CPU_PrepareException(EXCEPTION_UD,0);
 	}
 	CPU_SET_CRX(cr,value);
@@ -1630,8 +1646,8 @@ bool CPU_WRITE_CRX(Bitu cr,Bitu value) {
 Bitu CPU_GET_CRX(Bitu cr) {
 	switch (cr) {
 	case 0:
-		if (CPU_ArchitectureType>=CPU_ARCHTYPE_PENTIUMSLOW) return cpu.cr0;
-		else if (CPU_ArchitectureType>=CPU_ARCHTYPE_486OLDSLOW) return (cpu.cr0 & 0xe005003f);
+		if (CPU_ArchitectureType>=CPU_ARCHTYPE_PENTIUM) return cpu.cr0;
+		else if (CPU_ArchitectureType>=CPU_ARCHTYPE_486OLD) return (cpu.cr0 & 0xe005003f);
 		else return (cpu.cr0 | 0x7ffffff0);
 	case 2:
 		return paging.cr2;
@@ -1669,7 +1685,7 @@ bool CPU_WRITE_DRX(Bitu dr,Bitu value) {
 		break;
 	case 5:
 	case 7:
-		if (CPU_ArchitectureType<CPU_ARCHTYPE_PENTIUMSLOW) {
+		if (CPU_ArchitectureType<CPU_ARCHTYPE_PENTIUM) {
 			cpu.drx[7]=(value|0x400) & 0xffff2fff;
 		} else {
 			cpu.drx[7]=(value|0x400);
@@ -2003,7 +2019,7 @@ bool CPU_PopSeg(SegNames seg,bool use32) {
 }
 
 bool CPU_CPUID(void) {
-	if (CPU_ArchitectureType<CPU_ARCHTYPE_486NEWSLOW) return false;
+	if (CPU_ArchitectureType<CPU_ARCHTYPE_486NEW) return false;
 	switch (reg_eax) {
 	case 0:	/* Vendor ID String and maximum level? */
 		reg_eax=1;  /* Maximum level */ 
@@ -2012,13 +2028,13 @@ bool CPU_CPUID(void) {
 		reg_ecx='n' | ('t' << 8) | ('e' << 16) | ('l'<< 24); 
 		break;
 	case 1:	/* get processor type/family/model/stepping and feature flags */
-		if ((CPU_ArchitectureType==CPU_ARCHTYPE_486NEWSLOW) ||
+		if ((CPU_ArchitectureType==CPU_ARCHTYPE_486NEW) ||
 			(CPU_ArchitectureType==CPU_ARCHTYPE_MIXED)) {
 			reg_eax=0x402;		/* intel 486dx */
 			reg_ebx=0;			/* Not Supported */
 			reg_ecx=0;			/* No features */
 			reg_edx=0x00000001;	/* FPU */
-		} else if (CPU_ArchitectureType==CPU_ARCHTYPE_PENTIUMSLOW) {
+		} else if (CPU_ArchitectureType==CPU_ARCHTYPE_PENTIUM) {
 			reg_eax=0x513;		/* intel pentium */
 			reg_ebx=0;			/* Not Supported */
 			reg_ecx=0;			/* No features */
@@ -2205,7 +2221,7 @@ public:
 			cpu.drx[i]=0;
 			cpu.trx[i]=0;
 		}
-		if (CPU_ArchitectureType==CPU_ARCHTYPE_PENTIUMSLOW) {
+		if (CPU_ArchitectureType==CPU_ARCHTYPE_PENTIUM) {
 			cpu.drx[6]=0xffff0ff0;
 		} else {
 			cpu.drx[6]=0xffff1ff0;
@@ -2351,9 +2367,9 @@ public:
 		if (cputype == "auto") {
 			CPU_ArchitectureType = CPU_ARCHTYPE_MIXED;
 		} else if (cputype == "386") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_386FAST;
+			CPU_ArchitectureType = CPU_ARCHTYPE_386;
 		} else if (cputype == "386_prefetch") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_386FAST;
+			CPU_ArchitectureType = CPU_ARCHTYPE_386;
 			if (core == "normal") {
 				cpudecoder=&CPU_Core_Prefetch_Run;
 				CPU_PrefetchQueueSize = 16;
@@ -2364,12 +2380,10 @@ public:
 			} else {
 				E_Exit("prefetch queue emulation requires the normal core setting.");
 			}
-		} else if (cputype == "386_slow") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_386SLOW;
-		} else if (cputype == "486_slow") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_486NEWSLOW;
+		} else if (cputype == "486") {
+			CPU_ArchitectureType = CPU_ARCHTYPE_486NEW;
 		} else if (cputype == "486_prefetch") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_486NEWSLOW;
+			CPU_ArchitectureType = CPU_ARCHTYPE_486NEW;
 			if (core == "normal") {
 				cpudecoder=&CPU_Core_Prefetch_Run;
 				CPU_PrefetchQueueSize = 32;
@@ -2380,12 +2394,12 @@ public:
 			} else {
 				E_Exit("prefetch queue emulation requires the normal core setting.");
 			}
-		} else if (cputype == "pentium_slow") {
-			CPU_ArchitectureType = CPU_ARCHTYPE_PENTIUMSLOW;
+		} else if (cputype == "pentium") {
+			CPU_ArchitectureType = CPU_ARCHTYPE_PENTIUM;
 		}
 
-		if (CPU_ArchitectureType>=CPU_ARCHTYPE_486NEWSLOW) CPU_extflags_toggle=(FLAG_ID|FLAG_AC);
-		else if (CPU_ArchitectureType>=CPU_ARCHTYPE_486OLDSLOW) CPU_extflags_toggle=(FLAG_AC);
+		if (CPU_ArchitectureType>=CPU_ARCHTYPE_486NEW) CPU_extflags_toggle=(FLAG_ID|FLAG_AC);
+		else if (CPU_ArchitectureType>=CPU_ARCHTYPE_486OLD) CPU_extflags_toggle=(FLAG_AC);
 		else CPU_extflags_toggle=0;
 
 
