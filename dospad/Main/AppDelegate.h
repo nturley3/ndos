@@ -32,4 +32,10 @@
 @property (nonatomic, readonly) int frameskip;
 @property (nonatomic, readonly) int maxPercent;
 
+- (UIWindow *)connectToWindowScene:(UIWindowScene *)scene URLContexts:(NSSet<UIOpenURLContext *> *)URLContexts;
+- (BOOL)openPackageURL:(NSURL *)url;
+- (void)emulatorWillResignActive;
+- (void)emulatorDidBecomeActive;
+- (void)saveHistory;
+
 @end

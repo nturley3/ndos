@@ -29,6 +29,8 @@
 @interface AppDelegate ()
 {
 	DPEmulatorViewController *_emulatorController;
+	BOOL _startupRequested;
+	BOOL _startupCompleted;
 }
 @end
 
@@ -67,7 +69,7 @@
 	return nil;
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+- (BOOL)openPackageURL:(NSURL *)url
 {
 	NSLog(@"openURL: %@", url);
 	if (url.isFileURL)
@@ -93,32 +95,38 @@
 }
 
 
-- (void)applicationWillResignActive:(UIApplication *)application
+- (void)emulatorWillResignActive
 {
     dospad_pause();
     [_emulatorController willResignActive];
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
+- (void)emulatorDidBecomeActive
 {
     dospad_resume();
     [_emulatorController didBecomeActive];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
+- (void)saveHistory
 {
     dospad_save_history();
 }
 
-// iOS 3.x
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    dospad_save_history();
+    [self saveHistory];
 }
 
 - (void)startDOS 
 {
+	_startupRequested = NO;
+	if (_startupCompleted || !self.uiwindow.windowScene)
+		return;
+	_startupCompleted = YES;
+	[super applicationDidFinishLaunching:[UIApplication sharedApplication]];
+#ifdef THREADED
 	[[DOSPadEmulator sharedInstance] start];
+#endif
 }
 
 - (void)initColorTheme
@@ -170,14 +178,6 @@
 	[self initBackup];
 	[self initColorTheme];
 	
-	if ([DPSettings shared].autoOpenLastPackage)
-	{
-		NSURL *lastUrl = [self openLastURL];
-		if (lastUrl) {
-			[DOSPadEmulator sharedInstance].diskcDirectory = lastUrl.path;
-		}
-	}
-
 	// Make sure we are allowed to play in lock screen
 	NSError *setCategoryErr = nil;
 	NSError *activationErr  = nil;
@@ -188,17 +188,48 @@
 		setActive: YES
 		error: &activationErr];
 
-    screenView = [[SDL_uikitopenglview alloc] initWithFrame:CGRectMake(0,0,640,400)];
-    _emulatorController = [[DPEmulatorViewController alloc] init];
-    _emulatorController.screenView = screenView;
-	uiwindow.rootViewController = _emulatorController;
-    [uiwindow makeKeyAndVisible];
-	[super applicationDidFinishLaunching:application];
-#ifdef THREADED
-	// FIXME at present it is a must to delay emulation thread
-    [self performSelector:@selector(startDOS) withObject:nil afterDelay:1];
-#endif
     return YES;
+}
+
+- (UIWindow *)connectToWindowScene:(UIWindowScene *)scene URLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+	BOOL firstConnection = (_emulatorController == nil);
+	if (firstConnection)
+	{
+		screenView = [[SDL_uikitopenglview alloc] initWithFrame:CGRectMake(0, 0, 640, 400)];
+		_emulatorController = [[DPEmulatorViewController alloc] init];
+		_emulatorController.screenView = screenView;
+		self.uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
+		self.uiwindow.rootViewController = _emulatorController;
+	}
+	else
+	{
+		// SDL retains this window in its driver data. Reattach it rather than replacing it.
+		self.uiwindow.windowScene = scene;
+	}
+	[self.uiwindow makeKeyAndVisible];
+
+	NSURL *packageURL = nil;
+	for (UIOpenURLContext *context in URLContexts)
+	{
+		if (context.URL.isFileURL)
+		{
+			packageURL = context.URL;
+			break;
+		}
+	}
+	if (!packageURL && firstConnection && [DPSettings shared].autoOpenLastPackage)
+		packageURL = [self openLastURL];
+	if (packageURL)
+		[self openPackageURL:packageURL];
+
+	if (!_startupRequested && !_startupCompleted)
+	{
+		_startupRequested = YES;
+		// Preserve the delay needed for the rendering view to be ready before emulation.
+		[self performSelector:@selector(startDOS) withObject:nil afterDelay:1];
+	}
+	return self.uiwindow;
 }
 
 

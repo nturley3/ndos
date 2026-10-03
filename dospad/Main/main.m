@@ -19,7 +19,7 @@
 int main(int argc, char *argv[])
 {
     @autoreleasepool {
-        int retVal = UIApplicationMain(argc, argv, @"DosPadUIApplication", nil);
+        int retVal = UIApplicationMain(argc, argv, @"DosPadUIApplication", @"AppDelegate");
         return retVal;
     }
 }
