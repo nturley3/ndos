@@ -3,3 +3,6 @@ xcuserdata
 tmp
 *.local
 
+/.DS_Store
+/docs
+/scripts
