@@ -18,6 +18,9 @@
 
 
 #include "dosbox.h"
+#ifdef IPHONEOS
+#include "ndos_build_version.h"
+#endif
 #include "shell.h"
 #include "callback.h"
 #include "regs.h"

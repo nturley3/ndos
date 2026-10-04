@@ -1,0 +1,2 @@
+// Shared release version for the app and DOSBox's build label.
+MARKETING_VERSION = 1.1.1
