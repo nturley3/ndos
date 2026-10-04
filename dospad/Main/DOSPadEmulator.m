@@ -169,9 +169,14 @@ static DOSPadEmulator* _sharedInstance;
     @autoreleasepool {
         char *argv[1] = {"dosbox"};
         
-        // Calling dosbox entry function
-        SDL_main(1, argv);
-        started = NO;
+        // Keep DOSBox/SDL teardown on the worker; SDL waits for main-thread work.
+        int exitStatus = SDL_main(1, argv);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Serialize the final history save with scene lifecycle saves.
+            dospad_save_history();
+            self->started = NO;
+            exit(exitStatus);
+        });
     }
 } 
 
