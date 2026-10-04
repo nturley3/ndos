@@ -5,6 +5,7 @@ tmp
 
 /.DS_Store
 /docs
+/output/
 /scripts/*
 !/scripts/generate-build-version.sh
 !/scripts/test-build-version.py

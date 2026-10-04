@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		5D6440B17595480086D7753F /* appicon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 568DEBBEA6F14669A6D67713 /* appicon-512.png */; };
 		A810C832F171422CAF287A01 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A810C832F171422CAF287A02 /* SceneDelegate.m */; };
 		043DD76F10FD8A0000DED673 /* SDL_alphamult.c in Sources */ = {isa = PBXBuildFile; fileRef = 043DD76B10FD8A0000DED673 /* SDL_alphamult.c */; };
 		043DD77010FD8A0000DED673 /* SDL_alphamult.h in Headers */ = {isa = PBXBuildFile; fileRef = 043DD76C10FD8A0000DED673 /* SDL_alphamult.h */; };
@@ -742,6 +743,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		568DEBBEA6F14669A6D67713 /* appicon-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "appicon-512.png"; sourceTree = "<group>"; };
 		BB16AB8769D548C285D2F008 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = SOURCE_ROOT; };
 		A810C832F171422CAF287A02 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		A810C832F171422CAF287A03 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
@@ -2430,6 +2432,7 @@
 				E77E08522548007C00B5B11D /* default.idostheme */,
 				E79C2E5611E131DB002FE898 /* MainWindow.xib */,
 				E7B2BBE92525728100490083 /* screenshot_bg.png */,
+				568DEBBEA6F14669A6D67713 /* appicon-512.png */,
 				E7A482451FF733DF00AE7DB6 /* LaunchScreen.storyboard */,
 				E7A482411FF731C100AE7DB6 /* Assets.xcassets */,
 				E73B77D7127ED67300184D3B /* configs */,
@@ -3332,6 +3335,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E7B2BBEB2525728600490083 /* screenshot_bg.png in Resources */,
+				5D6440B17595480086D7753F /* appicon-512.png in Resources */,
 				E7B2BBE2252224AC00490083 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
