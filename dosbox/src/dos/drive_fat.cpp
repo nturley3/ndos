@@ -982,7 +982,13 @@ bool fatDrive::FileExists(const char *name) {
 bool fatDrive::FileOpen(DOS_File **file, char *name, Bit32u flags) {
 	direntry fileEntry;
 	Bit32u dirClust, subEntry;
-	if(!getFileDirEntry(name, &fileEntry, &dirClust, &subEntry)) return false;
+	Bit16u save_errorcode = dos.errorcode;
+	if(!getFileDirEntry(name, &fileEntry, &dirClust, &subEntry)) {
+		// Keep the internal directory-search error from overriding DOS_OpenFile's
+		// classification of missing files and missing parent directories.
+		dos.errorcode = save_errorcode;
+		return false;
+	}
 	/* TODO: check for read-only flag and requested write access */
 	*file = new fatFile(name, fileEntry.loFirstClust, fileEntry.entrysize, this);
 	(*file)->flags = flags;
