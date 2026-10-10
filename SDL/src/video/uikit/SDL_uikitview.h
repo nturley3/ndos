@@ -68,6 +68,7 @@
 }
 @property (nonatomic,assign)  id<MouseHoldDelegate> mouseHoldDelegate;
     
+- (void)cancelEmulatorTouches;
 - (void)sendMouseEvent:(int)index left:(BOOL)isLeft down:(BOOL)isDown;
 - (void)sendMouseMotion:(int)index x:(CGFloat)x y:(CGFloat)y;
 - (void)sendMouseCoordinate:(int)index x:(CGFloat)x y:(CGFloat)y;

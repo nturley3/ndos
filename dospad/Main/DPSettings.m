@@ -24,7 +24,9 @@
 
 static DPSettings *s_settings;
 
-@implementation DPSettings
+@implementation DPSettings {
+    NSDictionary *_lastValues;
+}
 
 + (DPSettings*)shared
 {
@@ -46,21 +48,17 @@ static DPSettings *s_settings;
     		name:NSUserDefaultsDidChangeNotification
     		object:nil];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults addObserver:self forKeyPath:@"landbar_toggle_bottom_screen" options:NSKeyValueObservingOptionNew context:NULL];
-        
-		[self loadDefaults];
+		[self defaultsDidChange:nil];
 	}
 	return self;
 }
 
 - (void)registerDefaultSettings
 {
-	NSString *path = [[NSBundle mainBundle] bundlePath];
-	path = [path stringByAppendingPathComponent:@"Settings.bundle"];
-	path = [path stringByAppendingPathComponent:@"Root.plist"];
+	NSString *path = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"plist"];
 	NSDictionary *settingsDict = [NSDictionary dictionaryWithContentsOfFile:path];
-	NSArray *prefs = settingsDict[@"PreferenceSpecifiers"];
+	_preferenceSpecifiers = settingsDict[@"PreferenceSpecifiers"];
+	NSArray *prefs = _preferenceSpecifiers;
 	NSMutableDictionary *defs = [NSMutableDictionary dictionary];
 	for (NSDictionary *item in prefs) {
 		NSString *key = item[@"Key"];
@@ -74,16 +72,40 @@ static DPSettings *s_settings;
 	}
 }
 
-- (void)defaultsDidChange:(NSNotification *)aNotification
+- (id)valueForPreferenceKey:(NSString *)key
 {
-	NSLog(@"defaultsDidChange");
-	[self loadDefaults];
-	[[NSNotificationCenter defaultCenter] postNotification:[NSNotification
-		notificationWithName:DPFSettingsChangedNotification object:nil]];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    NSLog(@"KVO: %@ changed property %@ to value %@", object, keyPath, change);
+- (void)setValue:(id)value forPreferenceKey:(NSString *)key
+{
+    NSAssert([NSThread isMainThread], @"Settings must be edited on the main thread");
+    if ([[self valueForPreferenceKey:key] isEqual:value]) return;
+    [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+    [self defaultsDidChange:nil];
+}
+
+- (void)defaultsDidChange:(NSNotification *)notification
+{
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{ [self defaultsDidChange:notification]; });
+        return;
+    }
+    // Defaults notifications also arrive for unrelated app preferences. Avoid
+    // redundant refreshes, including the notification following our own write.
+    NSMutableDictionary *values = [NSMutableDictionary dictionary];
+    for (NSDictionary *item in self.preferenceSpecifiers) {
+        NSString *key = item[@"Key"];
+        if (key) values[key] = [self valueForPreferenceKey:key];
+    }
+    if ([_lastValues isEqual:values]) return;
+    NSMutableSet *changedKeys = [NSMutableSet set];
+    for (NSString *key in values) {
+        if (![_lastValues[key] isEqual:values[key]]) [changedKeys addObject:key];
+    }
+    _lastValues = [values copy];
+    [self loadDefaults];
+    [[NSNotificationCenter defaultCenter] postNotificationName:DPFSettingsChangedNotification object:self userInfo:@{@"keys":changedKeys}];
 }
 
 - (void)loadDefaults

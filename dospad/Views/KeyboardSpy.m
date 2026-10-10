@@ -5,6 +5,7 @@
 //  Created by Chaoji Li on 2020/10/16.
 //
 #import "KeyboardSpy.h"
+#import "Common.h"
 #import "DOSPadEmulator.h"
 #include "SDL.h"
 #import "SDL_keyboard_c.h"
@@ -210,6 +211,7 @@
 
 - (void)onKeyCommand:(UIKeyCommand *)keyCommand
 {
+    if (dospad_settings_open()) return;
 	NSLog(@"onkeycommand: %@ %c%c%c", keyCommand.input,
 		(int)keyCommand.modifierFlags & UIKeyModifierShift ? 'S':'-',
 		(int)keyCommand.modifierFlags & UIKeyModifierAlternate ? 'A':'-',
@@ -252,6 +254,7 @@
 
 - (void)sendChar:(unichar)c
 {
+    if (dospad_settings_open()) return;
 	Uint16 mod = 0;
 	SDL_scancode code;
 	

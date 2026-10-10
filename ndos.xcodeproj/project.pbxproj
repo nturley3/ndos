@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+        A17300000000000000000001 /* DPSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A17300000000000000000002 /* DPSettingsViewController.m */; };
 		DFDA73A61EAA4E1A85010103 /* dospad_image_mount.h in Headers */ = {isa = PBXBuildFile; fileRef = DFDA73A61EAA4E1A85010104 /* dospad_image_mount.h */; };
 		DFDA73A61EAA4E1A85010101 /* DPImageMountBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = DFDA73A61EAA4E1A85010102 /* DPImageMountBridge.m */; };
 		5D6440B17595480086D7753F /* appicon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 568DEBBEA6F14669A6D67713 /* appicon-512.png */; };
@@ -443,7 +444,7 @@
 		E7A01EF81CC9C1AE0036A4CF /* kbd.png in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EE91CC92F0C0036A4CF /* kbd.png */; };
 		E7A01EFB1CC9C1C50036A4CF /* button.png in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EF01CC92F450036A4CF /* button.png */; };
 		E7A01EFC1CC9C1C80036A4CF /* buttonpressed.png in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EF11CC92F450036A4CF /* buttonpressed.png */; };
-		E7A01EFD1CC9C1F00036A4CF /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EF51CC9A82E0036A4CF /* Settings.bundle */; };
+		E7A01EFD1CC9C1F00036A4CF /* Settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = E7A01EF51CC9A82E0036A4CF /* Settings.plist */; };
 		E7A482421FF731C100AE7DB6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7A482411FF731C100AE7DB6 /* Assets.xcassets */; };
 		E7A482461FF733E400AE7DB6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E7A482451FF733DF00AE7DB6 /* LaunchScreen.storyboard */; };
 		E7B2BBB8252038D000490083 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = E7B2BBA6252038CF00490083 /* SDL_uikitview.h */; };
@@ -745,6 +746,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        A17300000000000000000002 /* DPSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPSettingsViewController.m; sourceTree = "<group>"; };
+        A17300000000000000000003 /* DPSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DPSettingsViewController.h; sourceTree = "<group>"; };
 		DFDA73A61EAA4E1A85010104 /* dospad_image_mount.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dospad_image_mount.h; sourceTree = "<group>"; };
 		DFDA73A61EAA4E1A85010102 /* DPImageMountBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPImageMountBridge.m; sourceTree = "<group>"; };
 		568DEBBEA6F14669A6D67713 /* appicon-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "appicon-512.png"; sourceTree = "<group>"; };
@@ -1291,7 +1294,7 @@
 		E7A01EE91CC92F0C0036A4CF /* kbd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = kbd.png; path = "misc-res/kbd.png"; sourceTree = "<group>"; };
 		E7A01EF01CC92F450036A4CF /* button.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = button.png; path = "gamepad-res/button.png"; sourceTree = "<group>"; };
 		E7A01EF11CC92F450036A4CF /* buttonpressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = buttonpressed.png; path = "gamepad-res/buttonpressed.png"; sourceTree = "<group>"; };
-		E7A01EF51CC9A82E0036A4CF /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		E7A01EF51CC9A82E0036A4CF /* Settings.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Settings.plist; sourceTree = "<group>"; };
 		E7A482411FF731C100AE7DB6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E7A482451FF733DF00AE7DB6 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E7B2BBA6252038CF00490083 /* SDL_uikitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitview.h; sourceTree = "<group>"; };
@@ -2441,7 +2444,7 @@
 				E7A482451FF733DF00AE7DB6 /* LaunchScreen.storyboard */,
 				E7A482411FF731C100AE7DB6 /* Assets.xcassets */,
 				E73B77D7127ED67300184D3B /* configs */,
-				E7A01EF51CC9A82E0036A4CF /* Settings.bundle */,
+				E7A01EF51CC9A82E0036A4CF /* Settings.plist */,
 				E7BE1318128BF31A0046990B /* iDOS-Info.plist */,
 				E7734DDC128A71AF0009CBEA /* audio */,
 				E7107146129A8E5A00B21291 /* floatpanel-res */,
@@ -2545,6 +2548,8 @@
 				E7FDFB40254E6EEE00A6DE66 /* DPKeyBinding.h */,
 				E7FDFB41254E6EEE00A6DE66 /* DPKeyBinding.m */,
 				E7961030256657FF00556B9D /* DPSettings.h */,
+                A17300000000000000000002 /* DPSettingsViewController.m */,
+                A17300000000000000000003 /* DPSettingsViewController.h */,
 				E7961031256657FF00556B9D /* DPSettings.m */,
 				E7D214C511E45BD000D9654E /* keys.h */,
 				E7D214C711E45BDE00D9654E /* keys.m */,
@@ -3355,7 +3360,7 @@
 				E7BE12B7128BF31A0046990B /* configs in Resources */,
 				E7A01EFB1CC9C1C50036A4CF /* button.png in Resources */,
 				E7D98C6A1CCA067400A17CFC /* modepianopressed~ipad.png in Resources */,
-				E7A01EFD1CC9C1F00036A4CF /* Settings.bundle in Resources */,
+				E7A01EFD1CC9C1F00036A4CF /* Settings.plist in Resources */,
 				E7BE12D0128BF31A0046990B /* centre.png in Resources */,
 				E7BE12D1128BF31A0046990B /* east.png in Resources */,
 				E7BE12D2128BF31A0046990B /* north.png in Resources */,
@@ -3751,6 +3756,7 @@
 				2A4546FA17D2812100D18563 /* PianoKeyboard.m in Sources */,
 				E7FDFB23254E6AF200A6DE66 /* DPGamepadButtonEditor.m in Sources */,
 				E79610322566580000556B9D /* DPSettings.m in Sources */,
+                A17300000000000000000001 /* DPSettingsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

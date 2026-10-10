@@ -103,7 +103,6 @@
 
 - (void)emulatorDidBecomeActive
 {
-    dospad_resume();
     [_emulatorController didBecomeActive];
 }
 
@@ -161,6 +160,11 @@
  * Exclude or include Documents folder for iCloud/iTunes backup,
  * depending on user settings.
  */
+- (void)settingsDidChange:(NSNotification *)notification
+{
+    if ([notification.userInfo[@"keys"] containsObject:kiCloudBackupEnabled]) [self initBackup];
+}
+
 - (void)initBackup
 {
 	if (DEFS_GET_BOOL(kiCloudBackupEnabled)) {
@@ -176,6 +180,7 @@
 	NSLog(@"didFinishLaunchingWithOptions %@", launchOptions);
 	[DPSettings shared];
 	[self initBackup];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsDidChange:) name:DPFSettingsChangedNotification object:nil];
 	[self initColorTheme];
 	
 	// Make sure we are allowed to play in lock screen

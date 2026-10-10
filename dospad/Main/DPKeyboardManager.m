@@ -8,12 +8,16 @@
 #import "DPKeyboardManager.h"
 #import <GameController/GameController.h>
 #include "keys.h"
+#import "Common.h"
+#import "DPSettings.h"
 
 static DPKeyboardManager *_manager;
 
 @interface DPKeyboardManager ()
 {
     BOOL _commandPrefix;
+    NSMutableDictionary<NSNumber *, NSNumber *> *_pressedScancodes;
+    NSMutableSet<NSNumber *> *_commandKeys;
 }
 
 @end
@@ -34,12 +38,18 @@ static DPKeyboardManager *_manager;
 // Let's turn off the prefix flag here.
 - (void)willResignActive
 {
+    for (NSNumber *scancode in _pressedScancodes.allValues)
+        [self.delegate keyboardManager:self scancode:scancode.intValue pressed:NO];
     _commandPrefix = NO;
+    [_pressedScancodes removeAllObjects];
+    [_commandKeys removeAllObjects];
 }
 
 - (id)init
 {
     self = [super init];
+    _pressedScancodes = [NSMutableDictionary dictionary];
+    _commandKeys = [NSMutableSet set];
     
     if (@available(iOS 14.0, *)) {
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -361,22 +371,36 @@ API_AVAILABLE(ios(14.0)){
         GCControllerButtonInput * _Nonnull key,
         GCKeyCode keyCode, BOOL pressed
     ) {
-        //NSLog(@"KEYBOARD %@ pressed=%d", [self getKeyName:keyCode], pressed);
-        if (keyCode == GCKeyCodeLeftGUI||keyCode==GCKeyCodeRightGUI) {
-            // Command key
-            self->_commandPrefix = pressed;
-            return;
-        }
-        if (self.delegate) {
-            if (self->_commandPrefix)
-            {
-                [self.delegate keyboardManager:self scancode:[self translateCommandPrefixCode:keyCode] pressed:pressed];
+        // Discard input at receipt too, so events typed in settings cannot be
+        // delivered later if dismissal runs before the queued callback.
+        if (dospad_settings_open()) return;
+        // Keep press/release translation stable if Command is released first.
+        // GCKeyboard may invoke its handler off the main thread.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (dospad_settings_open()) return;
+            NSNumber *physicalKey = @(keyCode);
+            if (keyCode == GCKeyCodeLeftGUI || keyCode == GCKeyCodeRightGUI) {
+                if (pressed) [self->_commandKeys addObject:physicalKey];
+                else [self->_commandKeys removeObject:physicalKey];
+                self->_commandPrefix = self->_commandKeys.count > 0;
+                return;
             }
-            else
-            {
-                [self.delegate keyboardManager:self scancode:[self translateToScancode:keyCode] pressed:pressed];
+            int scancode;
+            if (pressed) {
+                if (self->_commandPrefix && [[[DPSettings shared] valueForPreferenceKey:@"smart_keyboard_mappings"] boolValue])
+                    scancode = [self translateCommandPrefixCode:keyCode];
+                else
+                    scancode = [self translateToScancode:keyCode];
+                if (scancode == SDL_SCANCODE_UNKNOWN) return;
+                self->_pressedScancodes[physicalKey] = @(scancode);
+            } else {
+                NSNumber *held = self->_pressedScancodes[physicalKey];
+                if (!held) return;
+                scancode = held.intValue;
+                [self->_pressedScancodes removeObjectForKey:physicalKey];
             }
-        }
+            [self.delegate keyboardManager:self scancode:scancode pressed:pressed];
+        });
     };
 }
 
@@ -394,7 +418,7 @@ API_AVAILABLE(ios(14.0)){
 - (void)didDisconnect:(NSNotification *)note
 {
     NSLog(@"keyboard disconnected");
-    _commandPrefix = NO;
+    [self willResignActive];
 }
 
 @end

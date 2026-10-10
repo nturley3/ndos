@@ -29,7 +29,10 @@
 #import "Common.h"
 #import "keys.h"
 #include "SDL.h"
+#include <stdatomic.h>
+#include <stdbool.h>
 #import "SDL_keyboard_c.h"
+#import "SDL_mouse_c.h"
 #import "keyinfotable.h"
 #include "dospad_image_mount.h"
 
@@ -44,6 +47,7 @@ char diskd[256];
 cmd_entry *cmd_list = 0;
 int cmd_count = 0;
 int dospad_pause_flag = 0;
+static atomic_bool settingsOpen = false;
 int dospad_should_launch_game = 0;
 int dospad_command_line_ready = 0;
 char dospad_command_buffer[1024];
@@ -230,6 +234,7 @@ static DOSPadEmulator* _sharedInstance;
 
 - (void)sendChar:(unichar)c
 {
+    if (dospad_settings_open()) return;
 	Uint16 mod = 0;
 	SDL_scancode code;
 	
@@ -258,11 +263,13 @@ static DOSPadEmulator* _sharedInstance;
 
 - (void)sendKey:(int)scancode pressed:(BOOL)pressed
 {
+    if (dospad_settings_open()) return;
 	SDL_SendKeyboardKey( 0, pressed?SDL_PRESSED:SDL_RELEASED, scancode);
 }
 
 - (void)sendKey:(int)scancode
 {
+    if (dospad_settings_open()) return;
 	SDL_SendKeyboardKey( 0, SDL_PRESSED, scancode);
     [NSThread sleepForTimeInterval:0.05]; // Very very important	
 	SDL_SendKeyboardKey( 0, SDL_RELEASED, scancode);
@@ -271,6 +278,18 @@ static DOSPadEmulator* _sharedInstance;
 - (void)didCommandDone
 {
     NSLog(@"Command done");
+}
+
+- (void)releaseJoystickInput
+{
+    for (NSUInteger i = 0; i < sizeof(_joystick) / sizeof(_joystick[0]); i++) {
+        SDL_Joystick *joystick = _joystick[i];
+        if (!joystick) continue;
+        for (int axis = 0; axis < SDL_JoystickNumAxes(joystick); axis++)
+            SDL_PrivateJoystickAxis(joystick, axis, 0);
+        for (int button = 0; button < SDL_JoystickNumButtons(joystick); button++)
+            SDL_PrivateJoystickButton(joystick, button, SDL_RELEASED);
+    }
 }
 
 //MARK: - SDL Joystick
@@ -286,6 +305,7 @@ static DOSPadEmulator* _sharedInstance;
 
 - (void)updateJoystick:(NSInteger)index x:(float)x y:(float)y
 {
+    if (dospad_settings_open()) return;
 	if (![self ensureJoystick:index])
 		return;
 		
@@ -318,6 +338,7 @@ static DOSPadEmulator* _sharedInstance;
 
 - (void)joystickButton:(NSInteger)buttonIndex pressed:(BOOL)pressed joystickIndex:(NSInteger)index
 {
+    if (dospad_settings_open()) return;
 	if (![self ensureJoystick:index])
 		return;
 	SDL_PrivateJoystickButton(_joystick[index], buttonIndex, pressed?SDL_PRESSED:SDL_RELEASED);
@@ -363,7 +384,30 @@ void dospad_pause(void)
 
 void dospad_resume(void)
 {
-    dospad_pause_flag = 0;
+    if (!settingsOpen) dospad_pause_flag = 0;
+}
+
+BOOL dospad_settings_open(void)
+{
+    return settingsOpen;
+}
+
+void dospad_set_settings_open(BOOL open)
+{
+    settingsOpen = open;
+    if (open) {
+        // Queue releases before pausing, so no key or mouse button stays held.
+        SDL_ResetKeyboard(0);
+        SDL_Mouse *mouse = SDL_GetMouse(0);
+        if (mouse) {
+            for (Uint8 button = 1; button <= 8; button++) {
+                if (mouse->buttonstate & SDL_BUTTON(button))
+                    SDL_SendMouseButton(0, SDL_RELEASED, button);
+            }
+        }
+        [_sharedInstance releaseJoystickInput];
+        dospad_pause();
+    }
 }
 
 void dospad_command_done(void)

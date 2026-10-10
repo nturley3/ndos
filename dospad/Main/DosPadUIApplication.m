@@ -43,6 +43,7 @@ extern int SDL_SendKeyboardKey(int index, Uint8 state, SDL_scancode scancode);
 
 - (void)sendkey:(int)scancode pressed:(BOOL)pressed
 {
+    if (dospad_settings_open()) return;
 	SDL_SendKeyboardKey(0, pressed?SDL_PRESSED:SDL_RELEASED, scancode);
 }
 
@@ -71,6 +72,7 @@ extern int SDL_SendKeyboardKey(int index, Uint8 state, SDL_scancode scancode);
 
 - (void)decodeKeyEvent:(NSInteger *)eventMem
 {
+    if (dospad_settings_open()) { lastEventFlags = 0; return; }
     NSInteger eventType  = eventMem[GSEVENT_TYPE];                  // See GS_EVENTYPE_*
     NSInteger eventModifier = eventMem[GSEVENT_FLAGS];              // Indicate bitmask of 'modifiers pressed', where modifiers are SHIFT/CTRL/ALT/CAPS/WINKEY/CAPS/ETC (note, only LEFT macros above are actually sent on IOS9).
     NSInteger eventScanCode = eventMem[GSEVENTKEY_KEYCODE];         // ScanCode.
