@@ -41,12 +41,6 @@ typedef NS_ENUM(NSInteger, DPFloatingInputType) {
 	TAG_INPUT_MAX
 };
 
-typedef NS_ENUM(NSUInteger, DPImageMountAction) {
-    DISK_MOUNT_ACTION = 1,
-    FLOPPY_MOUNT_ACTION,
-    ISO_MOUNT_ACTION
-};
-
 static struct {
 	int type;
 	const char *onImageName;
@@ -92,6 +86,7 @@ static struct {
     FrameskipIndicator *fsIndicator2;
 	
     FloatPanel *fullscreenPanel;
+    UIDocumentPickerViewController *_guardedImageMountPicker;
     
     BOOL shouldShrinkScreen;
     CGRect _screenRect; // portraint only?
@@ -271,6 +266,12 @@ static struct {
         }
     }
         
+    UIButton *btnOpen = [[UIButton alloc] initWithFrame:CGRectMake(0,0,48,24)];
+    [btnOpen setImage:[UIImage imageNamed:@"open-image"] forState:UIControlStateNormal];
+    btnOpen.accessibilityLabel = NSLocalizedString(@"Open disk image", nil);
+    [btnOpen addTarget:self action:@selector(openImageMount:) forControlEvents:UIControlEventTouchUpInside];
+    [items addObject:btnOpen];
+
     UIButton *btnOption = [[UIButton alloc] initWithFrame:CGRectMake(380,0,48,24)];
     [btnOption setImage:[UIImage imageNamed:@"options.png"] forState:UIControlStateNormal];
     [btnOption addTarget:self action:@selector(showOption:) forControlEvents:UIControlEventTouchUpInside];
@@ -1209,6 +1210,11 @@ static struct {
 
 -(void)openDriveMountPicker:(DriveMountType)mountType
 {
+    [self openDriveMountPicker:mountType requiresEmptyPrompt:NO];
+}
+
+- (void)openDriveMountPicker:(DriveMountType)mountType requiresEmptyPrompt:(BOOL)requiresEmptyPrompt
+{
 	NSArray<UTType *> *utis = nil;
 	switch (mountType) {
 		case DriveMount_Default:
@@ -1267,6 +1273,7 @@ static struct {
     UIDocumentPickerViewController *picker;
     picker = [[UIDocumentPickerViewController alloc]initForOpeningContentTypes:utis];
 	picker.delegate = self;
+    if (requiresEmptyPrompt) _guardedImageMountPicker = picker;
     
     // Make the document picker fullscreen instead of partial
     //picker.modalPresentationStyle = UIModalPresentationOverFullScreen;
@@ -1293,96 +1300,87 @@ static struct {
 
 - (void)emulator:(DOSPadEmulator *)emulator open:(NSString*)path
 {
-    __block NSString *diskLetter = nil;
-    __block DPImageMountAction mountAction;
-    
-    // Drive letter dialog prompt
-    UIAlertController *diskLetterController = [UIAlertController alertControllerWithTitle:@"Choose Mount Point"
-        message:@"Drive name (letter) the image will use"
-        preferredStyle:UIAlertControllerStyleAlert];
-    
-    [diskLetterController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-      textField.placeholder = NSLocalizedString(@"D", @"Disk Letter");
-      [textField addTarget:self
-                    action:@selector(diskLetterTextFieldChanged:)
-          forControlEvents:UIControlEventEditingChanged];
-    }];
-    
-    UIAlertAction *okDriveSelectionAction = [UIAlertAction
-      actionWithTitle:NSLocalizedString(@"OK", @"OK action")
-      style:UIAlertActionStyleDefault
-      handler:^(UIAlertAction *action) {
-        [DOSPadEmulator sharedInstance].mountDiskLetter = diskLetterController.textFields.firstObject.text;
-        switch (mountAction) {
-            case DISK_MOUNT_ACTION:
-                [self openDriveMountPicker:DriveMount_DiskImage];
-                break;
-            case FLOPPY_MOUNT_ACTION:
-                [self openDriveMountPicker:DriveMount_FloppyImage];
-                break;
-            case ISO_MOUNT_ACTION:
-                [self openDriveMountPicker:DriveMount_CDImage];
-                break;
-            default:
-                break;
-        }
-        
-        // Enable the SDL keyboard event state
-        [[DOSPadEmulator sharedInstance] enableSDLKeyboardInput];
-    }];
-    
-    UIAlertAction *cancelDriveSelectionAction = [UIAlertAction
-      actionWithTitle:NSLocalizedString(@"Cancel", @"Cancel action")
-      style:UIAlertActionStyleCancel
-      handler:^(UIAlertAction *action) {
-        [[DOSPadEmulator sharedInstance] enableSDLKeyboardInput];
-    }];
-        
-    okDriveSelectionAction.enabled = NO;
-    [diskLetterController addAction:cancelDriveSelectionAction];
-    [diskLetterController addAction:okDriveSelectionAction];
-    
-    // Create the mounting image selection alert controller
-    UIAlertController* alertController = [UIAlertController alertControllerWithTitle:@"Mount Image" message:@"Select mounting option. If you have more complex needs (such as defining size or filesystem, use imgmount directly." preferredStyle:UIAlertControllerStyleAlert];
-    
-    // Create the actions
-    UIAlertAction *cancelMountAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * action) {
-        NSLog(@"Open CMD: Image mounting canceled");
-    }];
-    
-    UIAlertAction *mountDiskImageAction = [UIAlertAction actionWithTitle:@"Disk Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-        NSLog(@"mountDiskImageAction");
-        mountAction = DISK_MOUNT_ACTION;
-        // Temporarily disable SDL keyboard event state since alert view controller occurs on same thread and keyboard input in Dosbox
-        // is also received as user is providing disk drive letter in alert box. This is a hack and there may be a better way to do this.
-        [[DOSPadEmulator sharedInstance] disableSDLKeyboardInput];
-        [self presentViewController:diskLetterController animated:YES completion:nil];
-    }];
-    
-    UIAlertAction *mountFloppyImageAction = [UIAlertAction actionWithTitle:@"Floppy Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-        NSLog(@"mountFloppyImageAction");
-        mountAction = FLOPPY_MOUNT_ACTION;
-        [[DOSPadEmulator sharedInstance] disableSDLKeyboardInput];
-        [self presentViewController:diskLetterController animated:YES completion:nil];
-    }];
-    
-    UIAlertAction *mountISOImageAction = [UIAlertAction actionWithTitle:@"ISO Image" style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-        NSLog(@"mountISOImageAction");
-        mountAction = ISO_MOUNT_ACTION;
-        [[DOSPadEmulator sharedInstance] disableSDLKeyboardInput];
-        [self presentViewController:diskLetterController animated:YES completion:nil];
-    }];
+    [self presentImageMountOptions];
+}
 
-    [alertController addAction:mountDiskImageAction];
-    [alertController addAction:mountFloppyImageAction];
-    [alertController addAction:mountISOImageAction];
-    [alertController addAction:cancelMountAction];
-    [self presentViewController:alertController animated:YES completion:nil];
+- (void)openImageMount:(id)sender
+{
+    if (self.presentedViewController) return;
+    if (![[DOSPadEmulator sharedInstance] canMountImage]) {
+        [self showImageMountUnavailable];
+        return;
+    }
+    [self presentImageMountOptions];
+}
+
+- (void)showImageMountUnavailable
+{
+    [self alert:NSLocalizedString(@"Cannot mount image", nil)
+        message:NSLocalizedString(@"Return to an empty DOS prompt before mounting an image.", nil)];
+}
+
+- (void)presentImageMountOptions
+{
+    if (self.presentedViewController) return;
+    UIAlertController *options = [UIAlertController alertControllerWithTitle:@"Mount Image"
+        message:@"Select mounting option. If you have more complex needs (such as defining size or filesystem, use imgmount directly."
+        preferredStyle:UIAlertControllerStyleAlert];
+    __weak UIAlertController *weakOptions = options;
+    NSArray *titles = @[@"Disk Image", @"Floppy Image", @"ISO Image"];
+    NSArray *types = @[@(DriveMount_DiskImage), @(DriveMount_FloppyImage), @(DriveMount_CDImage)];
+    for (NSUInteger i = 0; i < titles.count; i++) {
+        DriveMountType type = [types[i] integerValue];
+        [options addAction:[UIAlertAction actionWithTitle:titles[i] style:UIAlertActionStyleDefault
+            handler:^(UIAlertAction *action) {
+                [weakOptions dismissViewControllerAnimated:YES completion:^{
+                    [self presentImageMountPointForType:type];
+                }];
+            }]];
+    }
+    [options addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+        style:UIAlertActionStyleCancel handler:nil]];
+    [self presentViewController:options animated:YES completion:nil];
+}
+
+- (void)presentImageMountPointForType:(DriveMountType)type
+{
+    UIAlertController *drive = [UIAlertController alertControllerWithTitle:@"Choose Mount Point"
+        message:@"Drive name (letter) the image will use" preferredStyle:UIAlertControllerStyleAlert];
+    __weak UIAlertController *weakDrive = drive;
+    [drive addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+        textField.placeholder = NSLocalizedString(@"D", @"Disk Letter");
+        [textField addTarget:self action:@selector(diskLetterTextFieldChanged:)
+            forControlEvents:UIControlEventEditingChanged];
+    }];
+    [drive addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+        style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+            [weakDrive dismissViewControllerAnimated:YES completion:^{
+                [[DOSPadEmulator sharedInstance] enableSDLKeyboardInput];
+            }];
+        }]];
+    UIAlertAction *ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
+        style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [DOSPadEmulator sharedInstance].mountDiskLetter = weakDrive.textFields.firstObject.text;
+            [weakDrive.textFields.firstObject resignFirstResponder];
+            [weakDrive dismissViewControllerAnimated:YES completion:^{
+                [[DOSPadEmulator sharedInstance] enableSDLKeyboardInput];
+                [self openDriveMountPicker:type requiresEmptyPrompt:YES];
+            }];
+        }];
+    ok.enabled = NO;
+    [drive addAction:ok];
+    // Prevent drive-letter typing from also reaching DOS. Restore on every exit.
+    [[DOSPadEmulator sharedInstance] disableSDLKeyboardInput];
+    [self presentViewController:drive animated:YES completion:nil];
 }
 
 - (void)documentPicker:(UIDocumentPickerViewController *)controller
 	didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 {
+	BOOL guardedMount = controller == _guardedImageMountPicker;
+    if (guardedMount) _guardedImageMountPicker = nil;
+    NSMutableArray<NSURL *> *scopedURLs = [NSMutableArray array];
+	NSMutableArray<NSString *> *floppyPaths = [NSMutableArray array];
 	NSMutableString *cmd = [NSMutableString string];
 	NSFileManager *fm = [NSFileManager defaultManager];
     UTType *test;
@@ -1391,8 +1389,9 @@ static struct {
     NSString *diskLetter = [DOSPadEmulator sharedInstance].mountDiskLetter;
                 	
 	for (NSURL *url in urls) {
-		NSURL *url = [urls firstObject];
-		[url startAccessingSecurityScopedResource];
+        type = nil;
+        BOOL scoped = [url startAccessingSecurityScopedResource];
+        if (guardedMount && scoped) [scopedURLs addObject:url];
 		NSString *ext = url.pathExtension.lowercaseString;
                 
         // Don't rely on the file extension. This allows adding additional file extensions per UTI
@@ -1404,7 +1403,7 @@ static struct {
         
         if([type isEqualToString:@"io.turley.dosbox-floppyimage"]) {
             NSLog(@"Attempting to mount floppy image %@", url.path);
-            [cmd appendFormat:@"imgmount %@ \"%@\" -t floppy\n", diskLetter, url.path];
+            [floppyPaths addObject:url.path];
         } else if ([type isEqualToString:@"io.turley.dosbox-diskimage"]) {
             NSLog(@"Attempting to mount disk image %@", url.path);
             [cmd appendFormat:@"imgmount %@ \"%@\" \n", diskLetter, url.path];
@@ -1431,7 +1430,38 @@ static struct {
 			[cmd appendFormat:@"mount d \"%@\" -autoinc\n", url.path];
 		}*/
 	}
+	if (floppyPaths.count) {
+        [floppyPaths sortUsingComparator:^NSComparisonResult(NSString *left, NSString *right) {
+            NSComparisonResult result = [left.lastPathComponent compare:right.lastPathComponent
+                options:NSNumericSearch | NSCaseInsensitiveSearch];
+            return result == NSOrderedSame ? [left compare:right options:NSLiteralSearch] : result;
+        }];
+        [cmd appendFormat:@"imgmount %@", diskLetter];
+        for (NSString *path in floppyPaths) {
+            [cmd appendFormat:@" \"%@\"", path];
+        }
+        [cmd appendString:@" -t floppy\n"];
+    }
 	
+    if (guardedMount) {
+        // Keep sandbox access until the worker has executed (or rejected) the mount.
+        // Dismiss first so an unavailable alert never competes with the picker.
+        [controller dismissViewControllerAnimated:YES completion:^{
+            void (^finish)(BOOL) = ^(BOOL accepted) {
+                for (NSURL *url in scopedURLs) [url stopAccessingSecurityScopedResource];
+                if (!accepted) [self showImageMountUnavailable];
+            };
+            if ([cmd lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 1000) {
+                for (NSURL *url in scopedURLs) [url stopAccessingSecurityScopedResource];
+                [self alert:@"Can not mount" message:@"Too many items"];
+            } else if (cmd.length) {
+                [[DOSPadEmulator sharedInstance] sendImageMountCommand:cmd completion:finish];
+            } else {
+                for (NSURL *url in scopedURLs) [url stopAccessingSecurityScopedResource];
+            }
+        }];
+        return;
+    }
 	if ([cmd length] > 1000) {
 		[self alert:@"Can not mount" message:@"Too many items"];
 		return;
@@ -1442,6 +1472,7 @@ static struct {
 
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller
 {
+    if (controller == _guardedImageMountPicker) _guardedImageMountPicker = nil;
     NSLog(@"Document picker was canceled");
 	// Do nothing
 }

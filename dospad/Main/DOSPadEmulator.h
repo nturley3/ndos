@@ -44,6 +44,9 @@
 - (void)takeScreenshot;
 - (void)sendText:(NSString *)text;
 - (void)sendCommand:(NSString *)cmd;
+// Availability is a snapshot; submission is checked again on the DOS worker.
+- (BOOL)canMountImage;
+- (void)sendImageMountCommand:(NSString *)cmd completion:(void (^)(BOOL accepted))completion;
 - (void)updateJoystick:(NSInteger)index x:(float)x y:(float)y;
 - (void)joystickButton:(NSInteger)buttonIndex pressed:(BOOL)pressed joystickIndex:(NSInteger)index;
 - (void)sendKey:(int)scancode pressed:(BOOL)pressed;

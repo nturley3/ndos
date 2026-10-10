@@ -25,6 +25,11 @@
 #include "regs.h"
 #include "callback.h"
 #include "support.h"
+#ifdef IPHONEOS
+#include "dospad_image_mount.h"
+extern int dospad_command_line_ready;
+extern char dospad_command_buffer[];
+#endif
 
 void DOS_Shell::ShowPrompt(void) {
 	Bit8u drive=DOS_GetDefaultDrive()+'A';
@@ -51,6 +56,10 @@ void DOS_Shell::InputCommand(char * line) {
 	std::list<std::string>::iterator it_history = l_history.begin(), it_completion = l_completion.begin();
 
 	while (size) {
+#ifdef IPHONEOS
+        dospad_image_mount_set_prompt_empty(dospad_command_line_ready
+            && !str_len && !dospad_command_buffer[0]);
+#endif
 		dos.echo=false;
 		while(!DOS_ReadFile(input_handle,&c,&n)) {
 			Bit16u dummy;
@@ -58,6 +67,10 @@ void DOS_Shell::InputCommand(char * line) {
 			DOS_OpenFile("con",2,&dummy);
 			LOG(LOG_MISC,LOG_ERROR)("Reopening the input handle. This is a bug!");
 		}
+#ifdef IPHONEOS
+        // Invalidate the snapshot before processing edits, history or completion.
+        dospad_image_mount_set_prompt_empty(false);
+#endif
 		if (!n) {
 			size=0;			//Kill the while loop
 			continue;
@@ -363,6 +376,9 @@ void DOS_Shell::InputCommand(char * line) {
 		}
 	}
 
+#ifdef IPHONEOS
+    dospad_image_mount_set_prompt_empty(false);
+#endif
 	if (!str_len) return;
 	str_len++;
 

@@ -26,6 +26,9 @@
 #include "inout.h"
 #include "dos_inc.h"
 #include "SDL.h"
+#ifdef IPHONEOS
+#include "dospad_image_mount.h"
+#endif
 
 /* SDL by default treats numlock and scrolllock different from all other keys.
  * In recent versions this can disabled by a environment variable which we set in sdlmain.cpp
@@ -507,6 +510,14 @@ static Bitu INT16_Handler(void) {
 			/* normal key found, return translated key in ax */
 			reg_ax=temp;
 		} else {
+#ifdef IPHONEOS
+            // Real queued input wins. A mount supplies Return only after the
+            // worker has verified the shell is still waiting at an empty prompt.
+            if (dospad_image_mount_take()) {
+                reg_ax = 0x1c0d;
+                break;
+            }
+#endif
 			/* enter small idle loop to allow for irqs to happen */
 			reg_ip+=1;
 		}
@@ -519,6 +530,12 @@ static Bitu INT16_Handler(void) {
 			}
 			reg_ax=temp;
 		} else {
+#ifdef IPHONEOS
+            if (dospad_image_mount_take()) {
+                reg_ax = 0x1c0d;
+                break;
+            }
+#endif
 			/* enter small idle loop to allow for irqs to happen */
 			reg_ip+=1;
 		}

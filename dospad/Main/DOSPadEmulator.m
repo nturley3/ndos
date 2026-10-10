@@ -31,6 +31,7 @@
 #include "SDL.h"
 #import "SDL_keyboard_c.h"
 #import "keyinfotable.h"
+#include "dospad_image_mount.h"
 
 extern int SDL_PrivateJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state);
 extern int SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value);
@@ -201,6 +202,18 @@ static DOSPadEmulator* _sharedInstance;
 }
 
 //MARK: - SDL Input/Output
+- (BOOL)canMountImage
+{
+    return dospad_image_mount_available();
+}
+
+- (void)sendImageMountCommand:(NSString *)cmd completion:(void (^)(BOOL))completion
+{
+    dospad_image_mount_request(cmd.UTF8String, ^(bool accepted) {
+        completion(accepted);
+    });
+}
+
 - (void)sendCommand:(NSString *)cmd
 {
 	if (dospad_command_line_ready && !dospad_command_buffer[0]) {
@@ -355,6 +368,7 @@ void dospad_resume(void)
 
 void dospad_command_done(void)
 {
+	dospad_image_mount_done();
 	[_sharedInstance performSelectorOnMainThread:@selector(didCommandDone) withObject:nil waitUntilDone:NO];
 }
 
@@ -462,7 +476,9 @@ int dospad_open(const char *args)
 {
     //[NSThread detachNewThreadSelector:@selector(open:) toTarget:_sharedInstance withObject:nil];
 
-    [_sharedInstance performSelector:@selector(open:) withObject:nil afterDelay:0.5];
+    // The shell runs on a worker without an NSRunLoop. Schedule the UI on main.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{ [_sharedInstance open:nil]; });
     
     // Args not used yet, but keep code active
     // NSString *s = [NSString stringWithUTF8String:args];

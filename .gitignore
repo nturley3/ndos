@@ -9,3 +9,6 @@ tmp
 /scripts/*
 !/scripts/generate-build-version.sh
 !/scripts/test-build-version.py
+!/scripts/test-image-mount.m
+!/scripts/test-image-mount.sh
+!/scripts/test-fat-open-errors.py
