@@ -119,8 +119,18 @@
     float marginx = ([UIDevice.currentDevice.model isEqual:@"iPad"] ? 95 : 66);
     float marginy_bot = ([UIDevice.currentDevice.model isEqual:@"iPad"] ? 10 : 7);
  
-    float w = (contentView.frame.size.width-marginx*2) / ([itemArray count]);
+    if (!itemArray.count) return;
+    float usableWidth = contentView.frame.size.width-marginx*2;
+    float w = usableWidth / itemArray.count;
     float h = contentView.frame.size.height - marginy_bot;
+    BOOL compact = NO;
+    for (UIView *item in itemArray) {
+        if (item.bounds.size.width > w) compact = YES;
+    }
+    // The first item is the CPU display; retain its internal label geometry.
+    float indicatorWidth = ((UIView *)itemArray.firstObject).bounds.size.width;
+    float buttonSlot = itemArray.count > 1
+        ? (usableWidth - indicatorWidth) / (itemArray.count - 1) : usableWidth;
  
     if (items != nil)
     {
@@ -132,7 +142,34 @@
     for (int i = 0; i < [itemArray count]; i++)
     {
         UIView * v = [itemArray objectAtIndex:i];
-        v.center = CGPointMake(marginx+w*i+w/2,h/2);
+        if (compact && i > 0) {
+            CGRect bounds = v.bounds;
+            bounds.size.width = MIN(bounds.size.width, buttonSlot);
+            v.bounds = bounds;
+            if ([v isKindOfClass:UIButton.class]) {
+                UIButton *button = (UIButton *)v;
+                for (NSNumber *state in @[@(UIControlStateNormal), @(UIControlStateHighlighted)]) {
+                    UIImage *image = [button imageForState:state.unsignedIntegerValue];
+                    if (!image) continue;
+                    CGFloat scale = MIN(1, MIN(bounds.size.width / image.size.width,
+                                               bounds.size.height / image.size.height));
+                    if (scale < 1) {
+                        CGSize size = CGSizeMake(image.size.width * scale, image.size.height * scale);
+                        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:size];
+                        UIImage *fitted = [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
+                            [image drawInRect:(CGRect){CGPointZero, size}];
+                        }];
+                        [button setImage:fitted forState:state.unsignedIntegerValue];
+                    }
+                }
+            }
+        }
+        CGFloat centerX = marginx+w*i+w/2;
+        if (compact) {
+            centerX = i == 0 ? marginx+indicatorWidth/2
+                : marginx+indicatorWidth+buttonSlot*(i-1)+buttonSlot/2;
+        }
+        v.center = CGPointMake(centerX,h/2);
         [contentView addSubview:v];
         if ([v isKindOfClass:[UIControl class]])
         {

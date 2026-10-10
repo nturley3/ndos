@@ -22,6 +22,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		DFDA73A61EAA4E1A85010103 /* dospad_image_mount.h in Headers */ = {isa = PBXBuildFile; fileRef = DFDA73A61EAA4E1A85010104 /* dospad_image_mount.h */; };
+		DFDA73A61EAA4E1A85010101 /* DPImageMountBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = DFDA73A61EAA4E1A85010102 /* DPImageMountBridge.m */; };
 		5D6440B17595480086D7753F /* appicon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 568DEBBEA6F14669A6D67713 /* appicon-512.png */; };
 		A810C832F171422CAF287A01 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A810C832F171422CAF287A02 /* SceneDelegate.m */; };
 		043DD76F10FD8A0000DED673 /* SDL_alphamult.c in Sources */ = {isa = PBXBuildFile; fileRef = 043DD76B10FD8A0000DED673 /* SDL_alphamult.c */; };
@@ -743,6 +745,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DFDA73A61EAA4E1A85010104 /* dospad_image_mount.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dospad_image_mount.h; sourceTree = "<group>"; };
+		DFDA73A61EAA4E1A85010102 /* DPImageMountBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DPImageMountBridge.m; sourceTree = "<group>"; };
 		568DEBBEA6F14669A6D67713 /* appicon-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "appicon-512.png"; sourceTree = "<group>"; };
 		BB16AB8769D548C285D2F008 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = SOURCE_ROOT; };
 		A810C832F171422CAF287A02 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
@@ -1793,6 +1797,7 @@
 				E71E611211B550FD00EC5A05 /* serialport.h */,
 				E71E611311B550FD00EC5A05 /* setup.h */,
 				E71E611411B550FD00EC5A05 /* shell.h */,
+				DFDA73A61EAA4E1A85010104 /* dospad_image_mount.h */,
 				E71E611511B550FD00EC5A05 /* support.h */,
 				E71E611611B550FD00EC5A05 /* timer.h */,
 				E71E611711B550FD00EC5A05 /* vga.h */,
@@ -2532,6 +2537,7 @@
 				E792A4BA11E36C9C00894C71 /* Common.h */,
 				E72BE6C512911B5C009DC46A /* DOSPadEmulator.h */,
 				E72BE6C612911B5C009DC46A /* DOSPadEmulator.m */,
+				DFDA73A61EAA4E1A85010102 /* DPImageMountBridge.m */,
 				E74BB2B415C93DBC005EC552 /* DosPadUIApplication.h */,
 				E74BB2B515C93DBC005EC552 /* DosPadUIApplication.m */,
 				E72BE69412911096009DC46A /* DPEmulatorViewController.h */,
@@ -2971,6 +2977,7 @@
 				E71E621611B550FD00EC5A05 /* serialport.h in Headers */,
 				E71E621711B550FD00EC5A05 /* setup.h in Headers */,
 				E71E621811B550FD00EC5A05 /* shell.h in Headers */,
+				DFDA73A61EAA4E1A85010103 /* dospad_image_mount.h in Headers */,
 				0984F66D287930A4000A3D9D /* utils.h in Headers */,
 				E71E621911B550FD00EC5A05 /* support.h in Headers */,
 				E71E621A11B550FD00EC5A05 /* timer.h in Headers */,
@@ -3732,6 +3739,7 @@
 				E72BE6E412911B5C009DC46A /* AppDelegate.m in Sources */,
 				A810C832F171422CAF287A01 /* SceneDelegate.m in Sources */,
 				E72BE6E512911B5C009DC46A /* DOSPadEmulator.m in Sources */,
+				DFDA73A61EAA4E1A85010101 /* DPImageMountBridge.m in Sources */,
 				F262CC2625A52C85005F21D2 /* DPKeyboardManager.m in Sources */,
 				E72BE6E712911B5C009DC46A /* KeyboardView.m in Sources */,
 				E72BE6E812911B5C009DC46A /* KeyView.m in Sources */,
@@ -4276,6 +4284,7 @@
 		};
 		E7B2BBDA252155F100490083 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB16AB8769D548C285D2F008 /* Version.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -4334,7 +4343,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos.thumbnail;
@@ -4350,6 +4358,7 @@
 		};
 		E7B2BBDB252155F100490083 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB16AB8769D548C285D2F008 /* Version.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -4403,7 +4412,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos.thumbnail;
@@ -4420,6 +4428,7 @@
 		};
 		E7B2BBDC252155F100490083 /* AppStore */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BB16AB8769D548C285D2F008 /* Version.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -4473,7 +4482,6 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.turley.ndos.thumbnail;
