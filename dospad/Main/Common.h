@@ -75,6 +75,9 @@
 
 void dospad_pause(void);
 void dospad_resume(void);
+// A settings sheet pauses the DOS worker and suppresses emulator input.
+BOOL dospad_settings_open(void);
+void dospad_set_settings_open(BOOL open);
 extern int SDL_SendKeyboardKey(int index, Uint8 state, SDL_scancode scancode);
 extern int dospad_should_launch_game;
 extern int dospad_command_line_ready;

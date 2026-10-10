@@ -29,6 +29,7 @@
 #import "MfiGamepadMapperView.h"
 #import "DPMouseManager.h"
 #import "DPKeyboardManager.h"
+#import "DPSettingsViewController.h"
 
 typedef NS_ENUM(NSInteger, DPFloatingInputType) {
 	TAG_INPUT_MIN = 1000,
@@ -68,7 +69,8 @@ static struct {
     DPKeyboardManagerDelegate,
 	MfiGamepadManagerDelegate,
 	MfiGamepadMapperDelegate,
-    UIPencilInteractionDelegate
+    UIPencilInteractionDelegate,
+    UIAdaptivePresentationControllerDelegate
 >
 {
 	MfiGamepadConfiguration *_mfiConfig;
@@ -88,6 +90,8 @@ static struct {
     FloatPanel *fullscreenPanel;
     UIDocumentPickerViewController *_guardedImageMountPicker;
     
+    BOOL _settingsPresented;
+    BOOL _emulatorVisible;
     BOOL shouldShrinkScreen;
     CGRect _screenRect; // portraint only?
     
@@ -274,6 +278,7 @@ static struct {
 
     UIButton *btnOption = [[UIButton alloc] initWithFrame:CGRectMake(380,0,48,24)];
     [btnOption setImage:[UIImage imageNamed:@"options.png"] forState:UIControlStateNormal];
+    btnOption.accessibilityLabel = NSLocalizedString(@"Settings", nil);
     [btnOption addTarget:self action:@selector(showOption:) forControlEvents:UIControlEventTouchUpInside];
     [items addObject:btnOption];
     
@@ -492,16 +497,7 @@ static struct {
         }
         else if ([type isEqualToString:@"landbar"])
         {
-            // FIXME: A dirty fix, FloatPanel has certain sizing requirements
-            // Ignore the frame settings
-            CGSize barSize = [UIDevice.currentDevice.model isEqual:@"iPad"] ? CGSizeMake(700, 47) : CGSizeMake(480, 32);
-            
-            // Set location and size of landbar
-            if([DPSettings shared].landbarToggleBottomScreen) {
-                frame = CGRectMake((rootRect.size.width-barSize.width)/2, rootRect.size.height-barSize.height/2, barSize.width, barSize.height);
-            } else {
-                frame = CGRectMake((rootRect.size.width-barSize.width)/2, 0, barSize.width, barSize.height);
-            }
+            frame = [self landscapeToolbarFrame:rootRect];
 
             //MARK: Fullscreen/scale panel button
             UIButton *btnExitFS;
@@ -577,6 +573,7 @@ static struct {
 {
     if ([name isEqualToString:@"power"])
     {
+        btn.accessibilityLabel = NSLocalizedString(@"Settings", nil);
         [btn addTarget:self action:@selector(showOption:) forControlEvents:UIControlEventTouchUpInside];
     }
     else if ([name isEqualToString:@"gamepad-toggle"])
@@ -611,20 +608,41 @@ static struct {
     }
 }
 
-- (void)didSettingsChanged:(NSNotification*)note
+- (CGRect)landscapeToolbarFrame:(CGRect)bounds
 {
-    // May be called in background thread
-    dispatch_async(dispatch_get_main_queue(), ^{
+    CGSize size = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad ? CGSizeMake(700, 47) : CGSizeMake(480, 32);
+    CGFloat y = [DPSettings shared].landbarToggleBottomScreen ? bounds.size.height - size.height / 2 : 0;
+    return CGRectMake((bounds.size.width - size.width) / 2, y, size.width, size.height);
+}
+
+- (void)didSettingsChanged:(NSNotification *)note
+{
+    NSSet *keys = note.userInfo[@"keys"];
+    if ([keys containsObject:@"screen_scale_mode"] || [keys containsObject:@"screen_pixelated"])
         [self updateScreen];
-        // None of these work
-        //[self->fullscreenPanel removeFromSuperview];
-        //[self.view addSubview:self->fullscreenPanel];
-        //[self refreshFullscreenPanel];
-    });
+    if ([keys containsObject:@"transparency"]) [self updateAlpha];
+    if ([keys containsObject:@"landbar_toggle_bottom_screen"] && fullscreenPanel.superview)
+        fullscreenPanel.frame = [self landscapeToolbarFrame:fullscreenPanel.superview.bounds];
+    if ([keys containsObject:kNumpadEnabled] || [keys containsObject:kJoystickEnabled]) {
+        if (![self allowsInput:TAG_INPUT_NUMPAD]) [self removeFloatingInput:TAG_INPUT_NUMPAD];
+        if (![self allowsInput:TAG_INPUT_JOYSTICK]) [self removeFloatingInput:TAG_INPUT_JOYSTICK];
+        [self refreshFullscreenPanel];
+    }
+    if ([keys containsObject:@"show_mouse_hold"] && ![DPSettings shared].showMouseHold)
+        holdIndicator.alpha = 0;
+    if ([keys containsObject:@"auto_shrink_screen_keyboard_enabled"] && UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad &&
+        !_currentScene.isPortrait && [self findInputView:TAG_INPUT_KEYBOARD]) {
+        BOOL shrink = [DPSettings shared].autoShrinkScreenKeyboardEnabled;
+        if (shrink != shouldShrinkScreen) [self toggleScreenSize];
+    }
+    if ([keys containsObject:@"mouse_numpad_multi_toggle"] && ![DPSettings shared].mouseNumpadMultiToggle &&
+        [self findInputView:TAG_INPUT_NUMPAD] && [self findInputView:TAG_INPUT_MOUSE_BUTTONS])
+        [self removeFloatingInput:TAG_INPUT_MOUSE_BUTTONS];
 }
 
 //MARK: - Pencil Delegates/Control
 - (void)pencilInteractionDidTap:(UIPencilInteraction *)interaction API_AVAILABLE(ios(12.1)){
+    if (dospad_settings_open()) return;
     //NSLog(@"Pencil double tap gesture detected");
     [self.screenView sendMouseEvent:0 left:NO down:YES];
     [self.screenView sendMouseEvent:0 left:NO down:NO];
@@ -681,6 +699,7 @@ static struct {
 
 - (void)keyboardManager:(DPKeyboardManager *)manager scancode:(int)scancode pressed:(BOOL)pressed
 {
+    if (dospad_settings_open()) return;
     SDL_SendKeyboardKey( 0, pressed?SDL_PRESSED:SDL_RELEASED, scancode);
 }
 
@@ -893,9 +912,10 @@ static struct {
 {
     [super viewWillAppear:animated];
     self.screenView.alpha = 1; // Try to fix reboot problem on iPad 3.2.x
-    dospad_resume();
+    _emulatorVisible = YES;
+    [self resumeIfEligible];
     
-    if (self.kbdspy)
+    if (self.kbdspy && !_settingsPresented)
     {
     	[self.kbdspy becomeFirstResponder];
 		[self.view bringSubviewToFront:self.kbdspy];
@@ -905,6 +925,7 @@ static struct {
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+    _emulatorVisible = NO;
     if ([UIDevice.currentDevice.model isEqual:@"iPad"] && !_currentScene.isPortrait)
     {
         self.screenView.alpha = 0; // Try to fix reboot problem on iPad 3.2.x
@@ -917,9 +938,16 @@ static struct {
     [[DPKeyboardManager defaultManager] willResignActive];
 }
 
+- (void)resumeIfEligible
+{
+    if (_emulatorVisible && !_settingsPresented && UIApplication.sharedApplication.applicationState == UIApplicationStateActive)
+        dospad_resume();
+}
+
 -(void)didBecomeActive
 {
-    if (self.kbdspy)
+    [self resumeIfEligible];
+    if (self.kbdspy && !_settingsPresented)
     {
     	[self.kbdspy becomeFirstResponder];
 		[self.view bringSubviewToFront:self.kbdspy];
@@ -1025,38 +1053,51 @@ static struct {
     holdIndicator.center=pt2;
 }
 
--(void)showOption:(id)sender
+- (void)finishSettings
 {
-	[self alert:@"Action" message:@"Please choose an option"
-		actions:@[
-	 		[UIAlertAction actionWithTitle:@"Screenshot"
-	 			style:UIAlertActionStyleDefault
-	 			handler:^(UIAlertAction * _Nonnull action) {
-	 				[[DOSPadEmulator sharedInstance] takeScreenshot];
-                }],
-	 		[UIAlertAction actionWithTitle:@"Settings"
-	 			style:UIAlertActionStyleDefault
-	 			handler:^(UIAlertAction * _Nonnull action) {
-					if (@available(iOS 10.0, *)) {
-						[[UIApplication sharedApplication]
-						 openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
-					} else {
-						[[UIApplication sharedApplication]
-                         openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
-					}
-                }]
-		]
-		source:sender];
+    if (!_settingsPresented) return;
+    _settingsPresented = NO;
+    dospad_set_settings_open(NO);
+    self.view.userInteractionEnabled = YES;
+    [[DPKeyboardManager defaultManager] willResignActive];
+    [self didBecomeActive];
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController
+{
+    [self finishSettings];
+}
+
+- (void)showOption:(id)sender
+{
+    if (self.presentedViewController || _settingsPresented) return;
+    _settingsPresented = YES;
+    [self.view endEditing:YES];
+    [self.screenView cancelEmulatorTouches];
+    [[DPKeyboardManager defaultManager] willResignActive];
+    holdIndicator.alpha = 0;
+    dospad_set_settings_open(YES);
+    self.view.userInteractionEnabled = NO;
+    DPSettingsViewController *settings = [[DPSettingsViewController alloc] init];
+    __weak DPEmulatorViewController *weakSelf = self;
+    settings.didFinish = ^{ [weakSelf finishSettings]; };
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:settings];
+    navigation.modalPresentationStyle = UIModalPresentationFormSheet;
+    navigation.preferredContentSize = CGSizeMake(560, 680);
+    navigation.presentationController.delegate = self;
+    [self presentViewController:navigation animated:YES completion:nil];
 }
 
 // MARK: GCMouse Manager
 - (void)mouseManager:(DPMouseManager *)manager button:(int)index pressed:(BOOL)pressed
 {
+    if (dospad_settings_open()) return;
     [self.screenView sendMouseEvent:0 left:index==0 down:pressed];
 }
 
 - (void)mouseManager:(DPMouseManager *)manager moveX:(CGFloat)x andY:(CGFloat)y
 {
+    if (dospad_settings_open()) return;
     CGSize size1 = self.screenView.frame.size;
     CGSize size2 = self.screenView.bounds.size;
     [self.screenView sendMouseMotion:0 x:x/size1.width*size2.width y:-y/size1.height*size2.height];
@@ -1124,6 +1165,7 @@ static struct {
 
 - (void)mfiButton:(MfiGamepadButtonIndex)buttonIndex pressed:(BOOL)pressed atPlayer:(NSInteger)playerIndex
 {
+    if (dospad_settings_open()) return;
 	if (_mfiMapper)
 	{
 		[_mfiMapper onButton:buttonIndex pressed:pressed atPlayer:playerIndex];
@@ -1149,6 +1191,7 @@ static struct {
 
 - (void)mfiJoystickMoveWithX:(float)x y:(float)y atPlayer:(NSInteger)playerIndex
 {
+    if (dospad_settings_open()) return;
 	if (_mfiMapper)
 	{
 		[_mfiMapper onJoystickMoveWithX:x y:y atPlayer:playerIndex];

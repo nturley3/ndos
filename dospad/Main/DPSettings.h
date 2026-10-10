@@ -42,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL autoShrinkScreenKeyboardEnabled;
 
 + (DPSettings*)shared;
+@property (nonatomic, readonly) NSArray<NSDictionary *> *preferenceSpecifiers;
+- (id)valueForPreferenceKey:(NSString *)key;
+// Write on main. Change notifications include an NSSet of changed keys in userInfo[@"keys"].
+- (void)setValue:(id)value forPreferenceKey:(NSString *)key;
 
 @end
 

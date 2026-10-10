@@ -9,12 +9,14 @@
 			<string>General</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
+			<key>FooterText</key>
+			<string>Device backups include nDOS files according to your system backup settings. Hardware keyboard shortcuts provide Escape and function-key combinations for keyboards without those keys.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Auto open last package</string>
+			<string>Open last package on launch</string>
 			<key>Key</key>
 			<string>auto_open_last</string>
 			<key>DefaultValue</key>
@@ -24,7 +26,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Enable iCloud/iTunes Backup</string>
+			<string>Include files in device backups</string>
 			<key>Key</key>
 			<string>icloud_backup_enabled</string>
 			<key>DefaultValue</key>
@@ -36,7 +38,7 @@
 			<key>Key</key>
 			<string>key_sound_enabled</string>
 			<key>Title</key>
-			<string>Key Sound Enabled</string>
+			<string>Keyboard sounds</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
@@ -46,7 +48,7 @@
 			<key>Key</key>
 			<string>gamepad_sound_enabled</string>
 			<key>Title</key>
-			<string>GamePad Sound Enabled</string>
+			<string>Gamepad sounds</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
@@ -54,7 +56,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Smart Keyboard Mappings (iPad)</string>
+			<string>Hardware keyboard shortcuts</string>
 			<key>Key</key>
 			<string>smart_keyboard_mappings</string>
 			<key>DefaultValue</key>
@@ -70,7 +72,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Mouse/Numpad Mutli-Toggle</string>
+			<string>Show mouse buttons and numpad together</string>
 			<key>Key</key>
 			<string>mouse_numpad_multi_toggle</string>
 			<key>DefaultValue</key>
@@ -80,7 +82,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Landbar Bottom of Screen (only in landscape mode)</string>
+			<string>Landscape toolbar at bottom</string>
 			<key>Key</key>
 			<string>landbar_toggle_bottom_screen</string>
 			<key>DefaultValue</key>
@@ -92,7 +94,7 @@
 			<key>Title</key>
 			<string>Screen</string>
 			<key>FooterText</key>
-			<string>Screen works as trackpad. To right click: hold one finger on screen, then quickly tap with another finger.</string>
+			<string>In trackpad mode, hold one finger and tap with another to right-click. Direct touch instead positions the pointer where you touch.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -115,10 +117,10 @@
 			<integer>1</integer>
 			<key>Titles</key>
 			<array>
-				<string>fill screen</string>
-				<string>aspect fit 4:3</string>
-				<string>aspect fit 16:10</string>
-				<string>aspect fit 16:9</string>
+				<string>Fill screen</string>
+				<string>Fit 4:3</string>
+				<string>Fit 16:10</string>
+				<string>Fit 16:9</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -169,21 +171,11 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Auto shrink screen when keyboard toggled (portriat mode)</string>
+			<string>Shrink screen for keyboard (iPad landscape)</string>
 			<key>Key</key>
 			<string>auto_shrink_screen_keyboard_enabled</string>
 			<key>DefaultValue</key>
 			<false/>
-		</dict>
-		<dict>
-			<key>Title</key>
-			<string>Pan as mouse move</string>
-			<key>Type</key>
-			<string>PSTitleValueSpecifier</string>
-			<key>DefaultValue</key>
-			<string>Mouse speed👇</string>
-			<key>Key</key>
-			<string>mouse_speed_title</string>
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
@@ -196,6 +188,8 @@
 			<integer>0</integer>
 			<key>Type</key>
 			<string>PSSliderSpecifier</string>
+			<key>Title</key>
+			<string>Mouse speed</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -224,10 +218,12 @@
 			<integer>0</integer>
 			<key>Type</key>
 			<string>PSSliderSpecifier</string>
+			<key>Title</key>
+			<string>Overlay transparency</string>
 		</dict>
 		<dict>
 			<key>FooterText</key>
-			<string>Display optional input options in landscape mode (Currently iPad only).</string>
+			<string>Show these controls in the landscape toolbar on iPhone and iPad.</string>
 			<key>Title</key>
 			<string>Optional Input Sources</string>
 			<key>Type</key>
@@ -239,7 +235,7 @@
 			<key>Key</key>
 			<string>numpad_enabled</string>
 			<key>Title</key>
-			<string>NumPad Enabled (iPhone)</string>
+			<string>Show numpad option</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
@@ -249,7 +245,7 @@
 			<key>Key</key>
 			<string>joystick_enabled</string>
 			<key>Title</key>
-			<string>JoyStick Enabled</string>
+			<string>Show joystick option</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
@@ -262,7 +258,5 @@
 			<string>PSGroupSpecifier</string>
 		</dict>
 	</array>
-	<key>StringsTable</key>
-	<string>Root</string>
 </dict>
 </plist>

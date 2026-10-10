@@ -12,3 +12,7 @@ tmp
 !/scripts/test-image-mount.m
 !/scripts/test-image-mount.sh
 !/scripts/test-fat-open-errors.py
+!/scripts/test-settings.m
+!/scripts/test-settings.sh
+!/scripts/test-settings-ui.m
+!/scripts/test-settings-ui.py

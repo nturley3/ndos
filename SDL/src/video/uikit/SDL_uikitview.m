@@ -55,6 +55,7 @@ void SDL_init_keyboard()
 	SDL_SetKeymap(0, 0, keymap, SDL_NUM_SCANCODES);
 }
 #import "DPSettings.h"
+#import "Common.h"
 
 #endif
 
@@ -117,6 +118,7 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 
 - (void)beginHold
 {
+    if (dospad_settings_open()) return;
 	if (_primaryHold != MOUSE_HOLD_WAIT)
 		return;
 	//NSLog(@"hold down");
@@ -327,8 +329,21 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 }
 
 // send mouse movement
+- (void)cancelEmulatorTouches
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(beginHold) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(beginHold) object:self];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(sendPendingClicks) object:nil];
+    [self endHold];
+    _primaryTouch = nil;
+    _secondaryTouch = nil;
+    _pendingClickCount = 0;
+    _pendingClickIndex = 0;
+}
+
 - (void)sendMouseMotion:(int)index x:(CGFloat)x y:(CGFloat)y
 {
+    if (dospad_settings_open()) return;
 	[self ensureSDLMouse];
     float mouseSpeed = [DPSettings shared].mouseSpeed;
 	if (mouseSpeed == 0) mouseSpeed=0.5;
@@ -343,6 +358,7 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 // sends the actual mouse coordinate
 - (void)sendMouseCoordinate:(int)index x:(CGFloat)x y:(CGFloat)y
 {
+    if (dospad_settings_open()) return;
     [self ensureSDLMouse];
     
     if(SDL_GetMouse(0)->relative_mode == SDL_TRUE)
@@ -352,6 +368,7 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 
 - (void)sendMouseEvent:(int)index left:(BOOL)isLeft down:(BOOL)isDown
 {
+    if (dospad_settings_open()) return;
 	[self ensureSDLMouse];
 	NSAssert(index==0 && SDL_GetNumMice()==1, @"Bad mouse");
 	//NSLog(@"mouse button %@ %@", isLeft?@"Left":@"Right", isDown?@"Down":@"Up");
@@ -475,6 +492,7 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 
 /* UITextFieldDelegate method.  Invoked when user types something. */
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (dospad_settings_open()) return NO;
 	
 	if ([string length] == 0) {
 		/* it wants to replace text with nothing, ie a delete */
@@ -521,6 +539,7 @@ static CGFloat CGPointDistanceToPoint(CGPoint a, CGPoint b)
 
 /* Terminates the editing session */
 - (BOOL)textFieldShouldReturn:(UITextField*)_textField {
+    if (dospad_settings_open()) return NO;
 	//[self hideKeyboard];
     SDL_SendKeyboardKey( 0, SDL_PRESSED, SDL_SCANCODE_RETURN);
     SDL_SendKeyboardKey( 0, SDL_RELEASED, SDL_SCANCODE_RETURN);
