@@ -31,6 +31,9 @@
 @property (nonatomic, readonly) UIView *contentView;
 @property (nonatomic, assign) BOOL autoHide;
 @property (nonatomic, assign) float autoHideInterval;
+@property (nonatomic, copy) void (^pinAction)(void);
+
+- (void)applyAutoHideDelay:(NSTimeInterval)delay;
 
 - (void)hideContent;
 - (void)showContent;

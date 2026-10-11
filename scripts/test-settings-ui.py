@@ -38,7 +38,7 @@ def main():
         "isa": "XCConfigurationList", "buildConfigurations": [ids["config"]],
         "defaultConfigurationName": "Debug", "defaultConfigurationIsVisible": "0"
     }
-    includes = ["dospad/Main", "dospad/Views", "dospad/Util", "SDL/include",
+    includes = ["dospad/Main", "dospad/Views", "dospad/Theme", "dospad/Util", "SDL/include",
                 "SDL/src/video/uikit", "SDL/src/events"]
     objects[ids["config"]] = {
         "isa": "XCBuildConfiguration", "name": "Debug", "buildSettings": {

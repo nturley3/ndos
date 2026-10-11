@@ -2,6 +2,9 @@
 #import <UIKit/UIKit.h>
 #import "DPSettingsViewController.h"
 #import "DPEmulatorViewController.h"
+#import "AppDelegate.h"
+#import "FloatPanel.h"
+#import "DPThemeScene.h"
 
 extern BOOL dospad_settings_open(void);
 extern int dospad_pause_flag;
@@ -11,11 +14,154 @@ extern void dospad_resume(void);
 - (void)showOption:(id)sender;
 - (void)finishSettings;
 - (void)presentationControllerDidDismiss:(UIPresentationController *)controller;
+- (UIView *)createSceneView:(DPThemeScene *)scene frame:(CGRect)frame;
+- (void)didSettingsChanged:(NSNotification *)note;
+@end
+
+@interface TestFloatPanel : FloatPanel
+@property (nonatomic) NSUInteger hideCalls;
+@end
+@implementation TestFloatPanel
+- (void)hideContent
+{
+    self.hideCalls++;
+    [super hideContent];
+}
 @end
 
 @interface SettingsTests : XCTestCase
 @end
 @implementation SettingsTests
+- (void)waitSeconds:(NSTimeInterval)seconds
+{
+    XCTestExpectation *delay = [self expectationWithDescription:@"Toolbar countdown"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(seconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{ [delay fulfill]; });
+    [self waitForExpectations:@[delay] timeout:seconds + 3];
+}
+- (void)testToolbarTimers
+{
+    BOOL animations = UIView.areAnimationsEnabled;
+    [UIView setAnimationsEnabled:NO];
+    UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 700, 47)];
+    TestFloatPanel *panel = [[TestFloatPanel alloc] initWithFrame:container.bounds];
+    [container addSubview:panel];
+    @try {
+        [panel applyAutoHideDelay:0.3];
+        XCTAssertLessThan(panel.contentView.frame.origin.y, 0);
+        [panel showContent];
+        [panel applyAutoHideDelay:0];
+        [self waitSeconds:0.5];
+        XCTAssertEqual(panel.hideCalls, 0u);
+        XCTAssertEqualWithAccuracy(panel.contentView.frame.origin.y, 0, 0.01);
+
+        [panel applyAutoHideDelay:0.3];
+        [self waitSeconds:0.1];
+        [panel applyAutoHideDelay:0.8];
+        [self waitSeconds:0.4];
+        XCTAssertEqual(panel.hideCalls, 0u); // Old short timer was cancelled.
+        [self waitSeconds:0.6];
+        XCTAssertEqual(panel.hideCalls, 1u);
+        XCTAssertLessThan(panel.contentView.frame.origin.y, 0);
+        [panel applyAutoHideDelay:0.1];
+        [self waitSeconds:0.3];
+        XCTAssertEqual(panel.hideCalls, 1u); // Hidden content has no countdown.
+
+        [panel applyAutoHideDelay:0];
+        XCTAssertEqualWithAccuracy(panel.contentView.frame.origin.y, 0, 0.01);
+        UIButton *item = [UIButton buttonWithType:UIButtonTypeSystem];
+        [panel setItems:@[item]];
+        [panel applyAutoHideDelay:0.6];
+        [self waitSeconds:0.3];
+        [item sendActionsForControlEvents:UIControlEventTouchUpInside];
+        [self waitSeconds:0.4];
+        XCTAssertEqual(panel.hideCalls, 1u); // Toolbar action restarted timer.
+        [self waitSeconds:0.4];
+        XCTAssertEqual(panel.hideCalls, 2u);
+
+        [panel showContent];
+        [panel removeFromSuperview];
+        [self waitSeconds:0.8];
+        XCTAssertEqual(panel.hideCalls, 2u); // Removed panel has no pending hide.
+    } @finally {
+        [panel removeFromSuperview];
+        [UIView setAnimationsEnabled:animations];
+    }
+}
+- (void)testToolbarPreferenceAndPin
+{
+    [self settle];
+    DPSettings *preferences = [DPSettings shared];
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+    NSDictionary *saved = [defaults persistentDomainForName:NSBundle.mainBundle.bundleIdentifier];
+    NSArray *keys = @[@"toolbar_auto_hide_delay", @"toolbar_last_auto_hide_delay"];
+    DPEmulatorViewController *emulator = [self emulator];
+    DPEmulatorViewController *toolbarController = [[DPEmulatorViewController alloc] init];
+    [NSNotificationCenter.defaultCenter addObserver:toolbarController selector:@selector(didSettingsChanged:) name:DPFSettingsChangedNotification object:preferences];
+    UIView *sceneView;
+    @try {
+        [preferences setValue:@3 forPreferenceKey:keys[0]];
+        [emulator showOption:nil];
+        [self settle];
+        UINavigationController *navigation = (id)emulator.presentedViewController;
+        DPSettingsViewController *settings = (id)navigation.topViewController;
+        NSIndexPath *path = [NSIndexPath indexPathForRow:2 inSection:1];
+        UITableViewCell *cell = [settings tableView:settings.tableView cellForRowAtIndexPath:path];
+        XCTAssertEqualObjects(cell.textLabel.text, @"Toolbar auto-hide");
+        XCTAssertEqualObjects(cell.detailTextLabel.text, @"3 seconds");
+        [settings tableView:settings.tableView didSelectRowAtIndexPath:path];
+        [self settle];
+        UITableViewController *choice = (id)navigation.topViewController;
+        NSArray *titles = @[@"Never", @"1 second", @"3 seconds", @"5 seconds", @"10 seconds"];
+        XCTAssertEqual([choice tableView:choice.tableView numberOfRowsInSection:0], titles.count);
+        for (NSUInteger i = 0; i < titles.count; i++) {
+            UITableViewCell *option = [choice tableView:choice.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
+            XCTAssertEqualObjects(option.textLabel.text, titles[i]);
+            XCTAssertEqual(option.accessoryType, i == 2 ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone);
+        }
+        [choice tableView:choice.tableView didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:3 inSection:0]];
+        [self settle];
+        XCTAssertEqual(preferences.toolbarAutoHideDelay, 5);
+
+        // Exercise production toolbar creation and pin wiring at both device widths.
+        for (NSNumber *width in @[@700, @480]) {
+            DPThemeScene *scene = [[DPThemeScene alloc] initWithAttributes:@{@"width":width, @"height":@320, @"nodes":@[@{@"type":@"landbar"}]} theme:nil];
+            sceneView = [toolbarController createSceneView:scene frame:CGRectMake(0, 0, width.doubleValue, 320)];
+            FloatPanel *panel = [toolbarController valueForKey:@"fullscreenPanel"];
+            XCTAssertTrue(panel.autoHide);
+            XCTAssertEqual(panel.autoHideInterval, 5);
+            UIButton *pin = [panel valueForKey:@"btnAutoHide"];
+            [pin sendActionsForControlEvents:UIControlEventTouchUpInside];
+            XCTAssertEqual(preferences.toolbarAutoHideDelay, 0);
+            XCTAssertFalse(panel.autoHide);
+            XCTAssertEqualObjects(pin.accessibilityLabel, @"Unpin toolbar");
+            cell = [settings tableView:settings.tableView cellForRowAtIndexPath:path];
+            XCTAssertEqualObjects(cell.detailTextLabel.text, @"Never");
+            [panel removeFromSuperview];
+            sceneView = [toolbarController createSceneView:scene frame:sceneView.bounds];
+            panel = [toolbarController valueForKey:@"fullscreenPanel"];
+            XCTAssertFalse(panel.autoHide);
+            pin = [panel valueForKey:@"btnAutoHide"];
+            [pin sendActionsForControlEvents:UIControlEventTouchUpInside];
+            XCTAssertEqual(preferences.toolbarAutoHideDelay, 5);
+            XCTAssertTrue(panel.autoHide);
+            XCTAssertEqual(panel.autoHideInterval, 5);
+            [panel removeFromSuperview];
+        }
+    } @finally {
+        [[toolbarController valueForKey:@"fullscreenPanel"] removeFromSuperview];
+        [NSNotificationCenter.defaultCenter removeObserver:toolbarController];
+        if (emulator.presentedViewController) {
+            [emulator dismissViewControllerAnimated:NO completion:nil];
+            [emulator finishSettings];
+            [self settle];
+        }
+        for (NSString *key in keys) {
+            if (saved[key]) [defaults setObject:saved[key] forKey:key];
+            else [defaults removeObjectForKey:key];
+        }
+        [NSNotificationCenter.defaultCenter postNotificationName:NSUserDefaultsDidChangeNotification object:defaults];
+    }
+}
 - (void)settle
 {
     XCTestExpectation *delay = [self expectationWithDescription:@"UI transition completes"];
@@ -32,6 +178,83 @@ extern void dospad_resume(void);
         }
     }
     return nil;
+}
+- (void)testKeepScreenAwake
+{
+    [self settle];
+    UIApplication *application = UIApplication.sharedApplication;
+    AppDelegate *delegate = (id)application.delegate;
+    DPSettings *preferences = [DPSettings shared];
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+    id savedValue = [defaults persistentDomainForName:NSBundle.mainBundle.bundleIdentifier][@"keep_screen_awake"];
+    DPEmulatorViewController *emulator = [self emulator];
+    XCTAssertNotNil(emulator);
+    @try {
+        [preferences setValue:@NO forPreferenceKey:@"keep_screen_awake"];
+        XCTAssertFalse(application.idleTimerDisabled);
+        [emulator showOption:nil];
+        [self settle];
+        UINavigationController *navigation = (id)emulator.presentedViewController;
+        DPSettingsViewController *settings = (id)navigation.topViewController;
+        NSIndexPath *path = [NSIndexPath indexPathForRow:5 inSection:0];
+        UITableViewCell *cell = [settings tableView:settings.tableView cellForRowAtIndexPath:path];
+        XCTAssertEqualObjects(cell.textLabel.text, @"Keep screen awake");
+        UISwitch *control = (id)cell.accessoryView;
+        XCTAssertTrue([control isKindOfClass:UISwitch.class]);
+        XCTAssertFalse(control.on);
+        control.on = YES;
+        [control sendActionsForControlEvents:UIControlEventValueChanged];
+        XCTAssertTrue(preferences.keepScreenAwake);
+        XCTAssertTrue(application.idleTimerDisabled);
+        XCTAssertEqual(dospad_pause_flag, 1);
+
+        [delegate emulatorWillResignActive];
+        XCTAssertFalse(application.idleTimerDisabled);
+        [delegate emulatorDidBecomeActive];
+        XCTAssertTrue(application.idleTimerDisabled);
+        XCTAssertEqual(dospad_pause_flag, 1);
+
+        control.on = NO;
+        [control sendActionsForControlEvents:UIControlEventValueChanged];
+        XCTAssertFalse(application.idleTimerDisabled);
+        [preferences setValue:@YES forPreferenceKey:@"keep_screen_awake"];
+        [delegate emulatorWillResignActive];
+        [preferences setValue:@NO forPreferenceKey:@"keep_screen_awake"];
+        XCTAssertFalse(application.idleTimerDisabled);
+        [delegate emulatorDidBecomeActive];
+        XCTAssertFalse(application.idleTimerDisabled);
+
+        [delegate emulatorWillResignActive];
+        [preferences setValue:@YES forPreferenceKey:@"keep_screen_awake"];
+        XCTAssertFalse(application.idleTimerDisabled);
+        // A fresh policy owner must apply an already-saved choice on first activation.
+        AppDelegate *freshDelegate = [[AppDelegate alloc] init];
+        [freshDelegate emulatorDidBecomeActive];
+        XCTAssertTrue(application.idleTimerDisabled);
+        [freshDelegate emulatorWillResignActive];
+        XCTAssertFalse(application.idleTimerDisabled);
+        [delegate emulatorDidBecomeActive];
+        XCTAssertTrue(application.idleTimerDisabled);
+        XCTAssertEqual(dospad_pause_flag, 1);
+        [navigation dismissViewControllerAnimated:NO completion:nil];
+        [emulator presentationControllerDidDismiss:navigation.presentationController];
+        [self settle];
+        XCTAssertNil(emulator.presentedViewController);
+        XCTAssertTrue(application.idleTimerDisabled);
+        XCTAssertEqual(dospad_pause_flag, 0);
+    } @finally {
+        if (emulator.presentedViewController) {
+            [emulator dismissViewControllerAnimated:NO completion:nil];
+            [emulator finishSettings];
+            [self settle];
+        }
+        if (savedValue) [preferences setValue:savedValue forPreferenceKey:@"keep_screen_awake"];
+        else {
+            [defaults removeObjectForKey:@"keep_screen_awake"];
+            [NSNotificationCenter.defaultCenter postNotificationName:NSUserDefaultsDidChangeNotification object:defaults];
+        }
+        [delegate emulatorDidBecomeActive];
+    }
 }
 - (void)testSettingsPresentationAndPause
 {
@@ -63,7 +286,7 @@ extern void dospad_resume(void);
     NSInteger rows = 0;
     for (NSInteger section = 0; section < [settings numberOfSectionsInTableView:settings.tableView]; section++)
         rows += [settings tableView:settings.tableView numberOfRowsInSection:section];
-    XCTAssertEqual(rows, 18);
+    XCTAssertEqual(rows, 20);
     NSIndexPath *path = [NSIndexPath indexPathForRow:0 inSection:0];
     UITableViewCell *cell = [settings tableView:settings.tableView cellForRowAtIndexPath:path];
     UISwitch *control = (id)cell.accessoryView;

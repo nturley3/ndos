@@ -114,6 +114,8 @@ int main(void)
         check(settings.screenScaleMode == DPScreenScaleModeFill, @"Scale default is preserved");
         check(fabsf(settings.mouseSpeed - 0.5f) < 0.001f && fabsf(settings.floatAlpha - 0.8f) < 0.001f, @"Slider defaults are preserved");
         check(![[settings valueForPreferenceKey:@"smart_keyboard_mappings"] boolValue], @"Keyboard mapping default is false");
+        check(!settings.keepScreenAwake, @"Keep screen awake defaults to false for existing users");
+        check(settings.toolbarAutoHideDelay == 3, @"Toolbar auto-hide defaults to three seconds");
 
         __block NSUInteger notifications = 0;
         __block NSSet *changedKeys;
@@ -122,6 +124,10 @@ int main(void)
             notifications++;
             changedKeys = note.userInfo[@"keys"];
             check(settings.screenScaleMode == [[settings valueForPreferenceKey:@"screen_scale_mode"] integerValue], @"Cache refreshes before notification");
+            check(settings.keepScreenAwake == [[settings valueForPreferenceKey:@"keep_screen_awake"] boolValue], @"Keep-awake cache refreshes before notification");
+            check(settings.toolbarAutoHideDelay == [[settings valueForPreferenceKey:@"toolbar_auto_hide_delay"] doubleValue], @"Toolbar cache refreshes before notification");
+            if (settings.toolbarAutoHideDelay > 0)
+                check(settings.toolbarAutoHideDelay == [defaults doubleForKey:@"toolbar_last_auto_hide_delay"], @"Timed delay is remembered before notification");
         }];
         [settings setValue:@4 forPreferenceKey:@"screen_scale_mode"];
         check(settings.screenScaleMode == DPScreenScaleModeAspectFit16x9, @"Scale edit applies synchronously");
@@ -134,6 +140,50 @@ int main(void)
         check(notifications == 1, @"Unrelated preferences do not refresh settings");
         [settings setValue:@0.65 forPreferenceKey:@"transparency"];
         check(fabsf(settings.floatAlpha - 0.35f) < 0.001f, @"Transparency preserves opacity conversion");
+
+        NSUInteger beforeAwakeEdit = notifications;
+        [settings setValue:@YES forPreferenceKey:@"keep_screen_awake"];
+        check(settings.keepScreenAwake, @"Keep screen awake applies synchronously");
+        check(notifications == beforeAwakeEdit + 1 && [changedKeys isEqual:[NSSet setWithObject:@"keep_screen_awake"]], @"Keep-awake edit reports only its changed key");
+        check([[defaults persistentDomainForName:suite][@"keep_screen_awake"] boolValue], @"Keep-awake selection is persisted");
+        DPSettings *reloaded = [[DPSettings alloc] init];
+        check(reloaded.keepScreenAwake, @"Saved keep-awake choice survives settings initialization");
+        [NSNotificationCenter.defaultCenter removeObserver:reloaded];
+        [settings setValue:@NO forPreferenceKey:@"keep_screen_awake"];
+        check(!settings.keepScreenAwake, @"Keep screen awake can be disabled synchronously");
+
+        for (NSNumber *delay in @[@1, @3, @5, @10]) {
+            [settings setValue:delay forPreferenceKey:@"toolbar_auto_hide_delay"];
+            check(settings.toolbarAutoHideDelay == delay.doubleValue, @"Each timed choice applies");
+            check([[defaults persistentDomainForName:suite][@"toolbar_auto_hide_delay"] isEqual:delay], @"Toolbar delay is persisted");
+            NSUInteger beforePin = notifications;
+            [settings toggleToolbarAutoHide];
+            check(settings.toolbarAutoHideDelay == 0, @"Pin selects Never");
+            check(notifications == beforePin + 1 && [changedKeys isEqual:[NSSet setWithObject:@"toolbar_auto_hide_delay"]], @"Pin reports one visible preference change");
+            DPSettings *fresh = [[DPSettings alloc] init];
+            check(fresh.toolbarAutoHideDelay == 0, @"Pinned choice survives initialization");
+            [fresh toggleToolbarAutoHide];
+            [NSNotificationCenter.defaultCenter removeObserver:fresh];
+            [NSNotificationCenter.defaultCenter postNotificationName:NSUserDefaultsDidChangeNotification object:defaults];
+            check(settings.toolbarAutoHideDelay == delay.doubleValue, @"Unpin restores saved timed choice after initialization");
+        }
+        [settings setValue:@0 forPreferenceKey:@"toolbar_auto_hide_delay"];
+        NSUInteger beforeRepeated = notifications;
+        [settings setValue:@0 forPreferenceKey:@"toolbar_auto_hide_delay"];
+        [NSNotificationCenter.defaultCenter postNotificationName:NSUserDefaultsDidChangeNotification object:defaults];
+        check(notifications == beforeRepeated, @"Repeated toolbar edits do not notify");
+        [defaults setObject:@99 forKey:@"toolbar_last_auto_hide_delay"];
+        [settings toggleToolbarAutoHide];
+        check(settings.toolbarAutoHideDelay == 3, @"Invalid remembered delay falls back to three seconds");
+        [settings setValue:@0 forPreferenceKey:@"toolbar_auto_hide_delay"];
+        [defaults removeObjectForKey:@"toolbar_last_auto_hide_delay"];
+        [settings toggleToolbarAutoHide];
+        check(settings.toolbarAutoHideDelay == 3, @"Missing remembered delay falls back to three seconds");
+        [defaults setObject:@5 forKey:@"toolbar_auto_hide_delay"];
+        [NSNotificationCenter.defaultCenter postNotificationName:NSUserDefaultsDidChangeNotification object:defaults];
+        [settings toggleToolbarAutoHide];
+        [settings toggleToolbarAutoHide];
+        check(settings.toolbarAutoHideDelay == 5, @"External timed edits are remembered for unpinning");
 
         NSUInteger controls = 0;
         for (NSDictionary *item in settings.preferenceSpecifiers) {
@@ -149,7 +199,7 @@ int main(void)
             check([[settings valueForPreferenceKey:key] isEqual:value], @"Every control can be saved");
             check([[defaults persistentDomainForName:suite][key] isEqual:value], @"Edits reach persistent defaults");
         }
-        check(controls == 18, @"All 18 existing preferences are represented");
+        check(controls == 20, @"All 20 preferences are represented");
 
         // A defaults change coming from outside the controller must refresh on main.
         [defaults setFloat:0.25 forKey:@"mouse_speed"];

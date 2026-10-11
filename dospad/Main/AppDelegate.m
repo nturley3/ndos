@@ -31,6 +31,7 @@
 	DPEmulatorViewController *_emulatorController;
 	BOOL _startupRequested;
 	BOOL _startupCompleted;
+	BOOL _sceneActive;
 }
 @end
 
@@ -95,14 +96,24 @@
 }
 
 
+- (void)updateIdleTimer
+{
+    NSAssert([NSThread isMainThread], @"Idle timer policy must run on main");
+    [UIApplication sharedApplication].idleTimerDisabled = _sceneActive && [DPSettings shared].keepScreenAwake;
+}
+
 - (void)emulatorWillResignActive
 {
+    _sceneActive = NO;
+    [self updateIdleTimer];
     dospad_pause();
     [_emulatorController willResignActive];
 }
 
 - (void)emulatorDidBecomeActive
 {
+    _sceneActive = YES;
+    [self updateIdleTimer];
     [_emulatorController didBecomeActive];
 }
 
@@ -157,12 +168,12 @@
 }
 
 /*
- * Exclude or include Documents folder for iCloud/iTunes backup,
- * depending on user settings.
+ * Apply app-wide policies when their preferences change.
  */
 - (void)settingsDidChange:(NSNotification *)notification
 {
     if ([notification.userInfo[@"keys"] containsObject:kiCloudBackupEnabled]) [self initBackup];
+    if ([notification.userInfo[@"keys"] containsObject:@"keep_screen_awake"]) [self updateIdleTimer];
 }
 
 - (void)initBackup
