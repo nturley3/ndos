@@ -101,17 +101,43 @@
              
 - (void)toggleAutoHide
 {
-    [self setAutoHide:!autoHide];
+    if (self.pinAction) self.pinAction();
 }
 
 
 - (void)resetAutoHideTimer
 {
-    if (autoHide)
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
+    if (autoHide && isContentShowing)
     {
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
         [self performSelector:@selector(hideContent) withObject:nil afterDelay:autoHideInterval];
     }
+}
+
+- (void)applyAutoHideDelay:(NSTimeInterval)delay
+{
+    if (delay > 0) autoHideInterval = delay;
+    self.autoHide = delay > 0;
+}
+
+- (void)setAutoHideInterval:(float)interval
+{
+    autoHideInterval = interval;
+    [self resetAutoHideTimer];
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    [super willMoveToSuperview:newSuperview];
+    if (!newSuperview)
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
+}
+
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    if (!self.window)
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
 }
 
 - (void)setItems:(NSArray*)itemArray
@@ -188,19 +214,22 @@
     {
         [btnAutoHide setImage:[UIImage imageNamed:[UIDevice.currentDevice.model isEqual:@"iPad"] ? @"unsticky~ipad.png" : @"unsticky.png"]
                      forState:UIControlStateNormal];
-        [self performSelector:@selector(hideContent) withObject:nil afterDelay:autoHideInterval];
+        btnAutoHide.accessibilityLabel = @"Pin toolbar";
+        [self resetAutoHideTimer];
     }
     else
     {
         [btnAutoHide setImage:[UIImage imageNamed:[UIDevice.currentDevice.model isEqual:@"iPad"] ? @"sticky~ipad.png" : @"sticky.png"]
                      forState:UIControlStateNormal]; 
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
+        btnAutoHide.accessibilityLabel = @"Unpin toolbar";
+        [self showContent];
     }
 }
 
 // Hide landbar content
 - (void)hideContent
 {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
     if (!isContentShowing)
         return;
     isContentShowing = NO;
@@ -214,11 +243,6 @@
 // Show landbar content
 - (void)showContent
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideContent) object:nil];
-    if (autoHide)
-    {
-        [self performSelector:@selector(hideContent) withObject:nil afterDelay:autoHideInterval];
-    }
     if (!isContentShowing)
     {
         isContentShowing = YES;
@@ -227,6 +251,7 @@
             self->contentView.center = CGPointMake(ptOrig.x, ptOrig.y + self->contentView.frame.size.height);
         }];
     }
+    [self resetAutoHideTimer];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

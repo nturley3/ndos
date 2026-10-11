@@ -502,6 +502,8 @@ static struct {
             //MARK: Fullscreen/scale panel button
             UIButton *btnExitFS;
             fullscreenPanel = [[FloatPanel alloc] initWithFrame:frame];
+            fullscreenPanel.pinAction = ^{ [[DPSettings shared] toggleToolbarAutoHide]; };
+            [fullscreenPanel applyAutoHideDelay:[DPSettings shared].toolbarAutoHideDelay];
             if ([UIDevice.currentDevice.model isEqual:@"iPad"]) {
                 btnExitFS = [[UIButton alloc] initWithFrame:CGRectMake(0,0,72,36)];
                 btnExitFS.center=CGPointMake(63, 18);
@@ -562,6 +564,8 @@ static struct {
     }
     if (_rootContainer) {
         NSLog(@"Recreate scene %@ %@, origin=%@", scene.name, @(viewRect), @(_rootContainer.bounds));
+        [fullscreenPanel removeFromSuperview];
+        fullscreenPanel = nil;
         [_rootContainer removeFromSuperview];
     }
     _rootContainer = [self createSceneView:_currentScene frame:viewRect];
@@ -618,6 +622,8 @@ static struct {
 - (void)didSettingsChanged:(NSNotification *)note
 {
     NSSet *keys = note.userInfo[@"keys"];
+    if ([keys containsObject:@"toolbar_auto_hide_delay"])
+        [fullscreenPanel applyAutoHideDelay:[DPSettings shared].toolbarAutoHideDelay];
     if ([keys containsObject:@"screen_scale_mode"] || [keys containsObject:@"screen_pixelated"])
         [self updateScreen];
     if ([keys containsObject:@"transparency"]) [self updateAlpha];

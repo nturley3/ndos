@@ -32,6 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) float floatAlpha; // overlay controls
 @property (readonly) BOOL showMouseHold;
 @property (readonly) BOOL autoOpenLastPackage;
+@property (readonly) BOOL keepScreenAwake;
+// Seconds before hiding the landscape toolbar; zero keeps it visible.
+@property (readonly) NSTimeInterval toolbarAutoHideDelay;
+- (void)toggleToolbarAutoHide;
 @property (readonly) BOOL pixelatedScaling;
 @property (readonly) BOOL mouseAbsEnable;
 // Allow mouse and numpad to be toggled at the same time

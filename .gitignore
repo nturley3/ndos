@@ -5,6 +5,8 @@ tmp
 
 /.DS_Store
 /docs
+/adr/
+/GLOSSARY.md
 /output/
 /scripts/*
 !/scripts/generate-build-version.sh
