@@ -75,9 +75,11 @@ static INLINE Bit32s Fetchds() {
 }
 
 #define JumpCond32_d(COND) {						\
+	Bit32s i;										\
+	if (COND) i = Fetchds();								\
 	SAVEIP;											\
-	if (COND) reg_eip+=Fetchds();					\
-	reg_eip+=4;										\
+	if (COND) reg_eip+=i;						\
+	else reg_eip+=4;									\
 	continue;										\
 }
 

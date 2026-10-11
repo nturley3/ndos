@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <setjmp.h>
 #include "dosbox.h"
 #include "debug.h"
 #include "cpu.h"
@@ -128,6 +129,9 @@ static Bit32u ticksAdded;
 Bit32s ticksDone;
 Bit32u ticksScheduled;
 bool ticksLocked;
+Bitu in_callback = 0;
+
+jmp_buf top_of_loop;
 void increaseticks();
 
 static Bitu Normal_Loop(void) {
@@ -137,10 +141,13 @@ static Bitu Normal_Loop(void) {
 			ret = (*cpudecoder)();
 			if (GCC_UNLIKELY(ret<0)) return 1;
 			if (ret>0) {
+				in_callback++;
 				if (GCC_UNLIKELY(ret >= CB_MAX)) return 0;
 				Bitu blah = (*CallBack_Handlers[ret])();
+				in_callback--;
 				if (GCC_UNLIKELY(blah)) return blah;
 			}
+			setjmp(top_of_loop);
 #if C_DEBUG
 			if (DEBUG_ExitLoop()) return 0;
 #endif
@@ -316,6 +323,7 @@ void DOSBOX_SetNormalLoop() {
 
 void DOSBOX_RunMachine(void){
 	Bitu ret;
+	setjmp(top_of_loop);
 	do {
 		ret=(*loop)();
 	} while (!ret);
@@ -496,11 +504,10 @@ void DOSBOX_Init(void) {
 	Pstring->Set_help("CPU Core used in emulation. auto will switch to dynamic if available and\n"
 		"appropriate.");
 
-	const char* cputype_values[] = { "auto", "386", "386_slow", "486_slow", "pentium_slow", "386_prefetch", 0};
-	Pstring = secprop->Add_string("cputype",Property::Changeable::Always,"auto");
+	const char* cputype_values[] = {"auto", "386", "486", "pentium", "386_prefetch", 0};
+	Pstring = secprop->Add_string("cputype",Property::Changeable::Always, "auto");
 	Pstring->Set_values(cputype_values);
-	Pstring->Set_help("CPU Type used in emulation. auto is the fastest choice.");
-
+	Pstring->Set_help("CPU Type used in emulation. auto emulates a 486 which tolerates Pentium instructions.");
 
 	Pmulti_remain = secprop->Add_multiremain("cycles",Property::Changeable::Always," ");
 	Pmulti_remain->Set_help(
